@@ -112,9 +112,9 @@ type Game =
         GL.Vertex2 ( 0.0125,  0.  )))
   
   member this.DrawMidGame game =
-    // Rotation!
     this.GLMatrixDo (fun () ->
-      //GL.Rotate (float game.ticks * -4., 0., 0., 1.)
+      // Rotation!
+      GL.Rotate (float game.totalTicks, 0., 0., 1.)
       
       // Draw a point in the center
       this.GLDo BeginMode.Points (fun () -> GL.Vertex2 (0, 0))

@@ -19,7 +19,7 @@ type Obstacles =
         |> List.filter (fun (_, distance) -> distance > 0.)
         |> (fun obstacles ->
             if totalTicks % 50u = 0u
-            then (0, 2.) :: obstacles, rand//this.CreateRandomizedObstacle rand :: this.CreateRandomizedObstacle (Seq.skip 1 rand) :: obstacles, Seq.skip 2 rand
+            then this.CreateRandomizedObstacle rand :: this.CreateRandomizedObstacle (Seq.skip 1 rand) :: obstacles, Seq.skip 2 rand
             else obstacles, rand)
     { this with obstacles = obstacles }, rand
 
