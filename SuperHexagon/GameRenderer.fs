@@ -133,8 +133,10 @@ type Game =
       this.DrawPlayer game
       List.iter (this.DrawObstacle <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.obstacles)
   
-  member this.DrawPostGame game =
-    this.DrawBackground ()
+  member this.DrawPostGame (game: PostGame) =
+    this.GLMatrixDo (fun () ->
+      GL.Rotate (float game.ticksSurvived, 0., 0., 1.) // Stay at the game's ending rotation so the screen doesn't snap back to zero
+      this.DrawBackground ())
   
   member this.DrawFrame ({ gameScreen = gameScreen }) =
     GL.ClearColor (0.f, 0.f, 0.f, 1.f)
