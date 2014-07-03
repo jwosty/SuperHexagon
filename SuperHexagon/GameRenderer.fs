@@ -15,6 +15,8 @@ type Game =
     SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL ||| SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN |||
     SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS ||| SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
   
+  static member CenterHexagonRadius = 0.1
+  
   new(handle, glContext) =
     { Handle = handle
       GLContext = glContext }
@@ -86,6 +88,17 @@ type Game =
               (x, y), i + 1)
             (Seq.last unitHexagonVertices, 0)
           |> ignore)
+    // Draw the inner hexagon
+    GL.Color3 (0., 1., 0.)
+    this.GLDo BeginMode.Triangles (fun () ->
+      unitHexagonVertices
+        |> Seq.fold (fun (lastX: float, lastY) (x, y) ->
+            GL.Vertex2 (0, 0)
+            GL.Vertex2 (lastX * Game.CenterHexagonRadius, lastY * Game.CenterHexagonRadius)
+            GL.Vertex2 (x * Game.CenterHexagonRadius, y * Game.CenterHexagonRadius)
+            x, y)
+          (Seq.last unitHexagonVertices)
+        |> ignore)
   
   member this.DrawObstacle playerSection (section, distance) =
     let x, y = Seq.nth section unitHexagonVertices
@@ -101,25 +114,13 @@ type Game =
       GL.Vertex2 (x * distance * 1.1, y * distance * 1.1)
       GL.Vertex2 (nextX * distance * 1.1, nextY * distance * 1.1))
   
-  member this.DrawCenterAndPlayer game =
+  member this.DrawPlayer game =
     // Draw the player
     this.GLMatrixDo (fun () ->
-      let factor = 0.1
-      // Draw the inner hexagon
-      GL.Color3 (0., 1., 0.)
-      this.GLDo BeginMode.Triangles (fun () ->
-        unitHexagonVertices
-          |> Seq.fold (fun (lastX: float, lastY) (x, y) ->
-              GL.Vertex2 (0, 0)
-              GL.Vertex2 (lastX * factor, lastY * factor)
-              GL.Vertex2 (x * factor, y * factor)
-              x, y)
-            (Seq.last unitHexagonVertices)
-          |> ignore)
       // Draw the player triangle pointing in the appropriate direction
       GL.Color3 (0., 0.8, 0.)
       GL.Rotate (float game.playerAngle, 0., 0., 1.)
-      GL.Translate (0., factor * -1.1, 0.)
+      GL.Translate (0., Game.CenterHexagonRadius * -1.1, 0.)
       this.GLDo BeginMode.Triangles (fun () ->
         GL.Vertex2 (-0.0125,  0.  )
         GL.Vertex2 ( 0.    , -0.02)
@@ -127,17 +128,10 @@ type Game =
   
   member this.DrawMidGame game =
     this.GLMatrixDo (fun () ->
-      // Rotation!
-      GL.Rotate (float game.totalTicks, 0., 0., 1.)
-      
-      // Draw a point in the center
-      this.GLDo BeginMode.Points (fun () -> GL.Vertex2 (0, 0))
-      
+      GL.Rotate (float game.totalTicks, 0., 0., 1.) // Rotation!
       this.DrawBackground ()
-      
-      this.DrawCenterAndPlayer game
-      
-      List.iter (this.DrawObstacle (float game.playerAngle * (6. / 360.) |> wrap 6. |> int)) game.obstacles.obstacles)
+      this.DrawPlayer game
+      List.iter (this.DrawObstacle <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.obstacles)
   
   member this.DrawPostGame game =
     this.DrawBackground ()
