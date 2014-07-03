@@ -21,6 +21,9 @@ type Obstacles =
             else obstacles, rand)
     { this with obstacles = obstacles }, rand
 
+type IGameScreen =
+  abstract Update: byte[] -> IGameScreen
+
 type Game =
   { totalTicks: uint32
     rand: uint64 seq
@@ -33,21 +36,28 @@ type Game =
   
   member this.AddObstaclesIfNeeded obstacles = if this.totalTicks % 50u = 0u then (0, 1.) :: obstacles else obstacles
   
-  member this.Update (keyboardState: byte[]) =
-    let playerTurn =
-      // Keyboard repeat events is unreliable, so just use the current keyboard state
-      match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
-      | 1uy, 0uy -> -10
-      | 0uy, 1uy -> 10
-      | _ -> 0
-    let playerAngle = this.playerAngle + playerTurn % 360
-    let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
-    //if obstacles.CheckCollision (float playerAngle * (6. / 360.) |> int) then printfn "GAME OVER"
-    { this with
-        totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
-        obstacles = obstacles; rand = rand }
+  interface IGameScreen with
+    member this.Update (keyboardState: byte[]) =
+      let playerTurn =
+        // Keyboard repeat events is unreliable, so just use the current keyboard state
+        match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
+        | 1uy, 0uy -> -10
+        | 0uy, 1uy -> 10
+        | _ -> 0
+      let playerAngle = this.playerAngle + playerTurn % 360
+      let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
+      //if obstacles.CheckCollision (float playerAngle * (6. / 360.) |> int) then printfn "GAME OVER"
+      if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
+        PostGame.CreateDefault this.totalTicks :> _
+      else
+        { this with
+            totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
+            obstacles = obstacles; rand = rand } :> _
 
 and PostGame =
   { ticksSurvived: uint32 }
   
-  member this.Update (keyboardState: byte[]) = this
+  static member CreateDefault ticksSurvived = { ticksSurvived = ticksSurvived }
+  
+  interface IGameScreen with
+    member this.Update (keyboardState: byte[]) = upcast this

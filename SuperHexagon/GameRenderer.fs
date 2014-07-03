@@ -72,7 +72,22 @@ type Game =
     render ()
     GL.End ()
   
-  member private this.DrawObstacle playerSection (section, distance) =
+  member this.DrawBackground () =
+    this.GLDo BeginMode.Triangles (fun () ->
+        let far = 2.
+        unitHexagonVertices
+          |> Seq.fold (fun ((lastX: float, lastY), i) (x, y) ->
+              if i % 2 = 0    // Alternating background colors
+              then GL.Color3 (0., 0.25, 0.)   // light
+              else GL.Color3 (0., 0.3, 0.)    // dark
+              GL.Vertex2 (0, 0)
+              GL.Vertex2 (lastX * far, lastY * far)
+              GL.Vertex2 (x * far, y * far)
+              (x, y), i + 1)
+            (Seq.last unitHexagonVertices, 0)
+          |> ignore)
+  
+  member this.DrawObstacle playerSection (section, distance) =
     let x, y = Seq.nth section unitHexagonVertices
     let nextX, nextY = Seq.nth (section + 1 |> wrap 6) unitHexagonVertices
     // Color the obstacle red if it's hitting the player or green if it's not
@@ -86,7 +101,7 @@ type Game =
       GL.Vertex2 (x * distance * 1.1, y * distance * 1.1)
       GL.Vertex2 (nextX * distance * 1.1, nextY * distance * 1.1))
   
-  member private this.DrawCenterAndPlayer game =
+  member this.DrawCenterAndPlayer game =
     // Draw the player
     this.GLMatrixDo (fun () ->
       let factor = 0.1
@@ -118,32 +133,23 @@ type Game =
       // Draw a point in the center
       this.GLDo BeginMode.Points (fun () -> GL.Vertex2 (0, 0))
       
-      // Draw the background
-      this.GLDo BeginMode.Triangles (fun () ->
-        let far = 2.
-        unitHexagonVertices
-          |> Seq.fold (fun ((lastX: float, lastY), i) (x, y) ->
-              if i % 2 = 0    // Alternating background colors
-              then GL.Color3 (0., 0.25, 0.)   // light
-              else GL.Color3 (0., 0.3, 0.)    // dark
-              GL.Vertex2 (0, 0)
-              GL.Vertex2 (lastX * far, lastY * far)
-              GL.Vertex2 (x * far, y * far)
-              (x, y), i + 1)
-            (Seq.last unitHexagonVertices, 0)
-          |> ignore)
+      this.DrawBackground ()
       
       this.DrawCenterAndPlayer game
       
       List.iter (this.DrawObstacle (float game.playerAngle * (6. / 360.) |> wrap 6. |> int)) game.obstacles.obstacles)
   
-  member this.DrawFrame game =
+  member this.DrawPostGame game =
+    this.DrawBackground ()
+  
+  member this.DrawFrame ({ gameScreen = gameScreen }) =
     GL.ClearColor (0.f, 0.f, 0.f, 1.f)
     GL.Clear ClearBufferMask.ColorBufferBit
     
-    match game with
-    | MidGame(game) -> this.DrawMidGame game
-    | PostGame(game) -> ()
+    match gameScreen with
+    | :? SuperHexagon.Game as game -> this.DrawMidGame game
+    | :? PostGame as game -> this.DrawPostGame game
+    | _ -> failwith <| sprintf "Encountered unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
     
     SDL.SDL_GL_SwapWindow this.Handle
 

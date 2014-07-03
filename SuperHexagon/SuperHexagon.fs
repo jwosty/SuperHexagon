@@ -3,14 +3,11 @@ open SDL2
 open SuperHexagon.HelperFunctions
 
 type SuperHexagon =
-  | MidGame of Game | PostGame of PostGame
+  { gameScreen: IGameScreen }
   
-  static member CreateDefault () = MidGame(Game.CreateDefault ())
+  static member CreateDefault () = { gameScreen = Game.CreateDefault () :> IGameScreen }
   
   member this.Update events keyboardState =
-    if quitRequested events keyboardState then
-      None
-    else
-      match this with
-      | MidGame(game) -> Some(MidGame(game.Update keyboardState))
-      | PostGame(postGame) -> Some(PostGame(postGame.Update keyboardState))
+    if quitRequested events keyboardState
+    then None
+    else Some({this with gameScreen = this.gameScreen.Update keyboardState })
