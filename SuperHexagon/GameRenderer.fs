@@ -138,16 +138,24 @@ type Game =
       GL.Rotate (float game.ticksSurvived, 0., 0., 1.) // Stay at the game's ending rotation so the screen doesn't snap back to zero
       this.DrawBackground ())
   
-  member this.DrawFrame ({ gameScreen = gameScreen }) =
-    GL.ClearColor (0.f, 0.f, 0.f, 1.f)
-    GL.Clear ClearBufferMask.ColorBufferBit
-    
+  member this.DrawScreen (gameScreen: IGameScreen) =
     match gameScreen with
     | :? SuperHexagon.Game as game -> this.DrawMidGame game
     | :? PostGame as game -> this.DrawPostGame game
-    | _ -> failwith <| sprintf "Encountered unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
-    
-    SDL.SDL_GL_SwapWindow this.Handle
+    | :? Transition as transition -> this.DrawTransition transition
+    | _ -> failwith <| sprintf "Unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
+  
+  member this.DrawTransition (transition: Transition) =
+    match transition.start, transition.finish with
+    | :? SuperHexagon.Game as game, :? PostGame as postGame -> this.GLMatrixDo (fun () ->
+        this.DrawBackground ())
+    | _ -> this.DrawScreen transition.finish   // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
+  
+  member this.DrawFrame ({ gameScreen = gameScreen }) =
+    GL.ClearColor (0.f, 0.f, 0.f, 1.f)        // Prepare for drawing
+    GL.Clear ClearBufferMask.ColorBufferBit   // ^^
+    this.DrawScreen gameScreen                // Draw
+    SDL.SDL_GL_SwapWindow this.Handle         // Show the result
 
   member this.Window = SDL.SDL_GetWindowSurface this.Handle |> ptrToStructure<SDL.SDL_Surface>
 

@@ -24,6 +24,20 @@ type Obstacles =
 type IGameScreen =
   abstract Update: byte[] -> IGameScreen
 
+type Transition =
+  { start: IGameScreen; finish: IGameScreen
+    finishTicks: int; progress: int }
+  
+  static member CreateDefault start finish finishTicks =
+    { start = start; finish = finish
+      finishTicks = finishTicks; progress = 0 }
+  
+  interface IGameScreen with
+    member this.Update keyboard =
+      if (this.progress + 1) >= this.finishTicks
+      then this.finish
+      else upcast { this with progress = this.progress + 1 }
+
 type Game =
   { totalTicks: uint32
     rand: uint64 seq
@@ -39,16 +53,15 @@ type Game =
   interface IGameScreen with
     member this.Update (keyboardState: byte[]) =
       let playerTurn =
-        // Keyboard repeat events is unreliable, so just use the current keyboard state
+        // Keyboard repeat events are unreliable, so just use the current keyboard state
         match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
         | 1uy, 0uy -> -10
         | 0uy, 1uy -> 10
         | _ -> 0
       let playerAngle = this.playerAngle + playerTurn % 360
       let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
-      //if obstacles.CheckCollision (float playerAngle * (6. / 360.) |> int) then printfn "GAME OVER"
       if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
-        PostGame.CreateDefault this.totalTicks :> _
+        Transition.CreateDefault this (PostGame.CreateDefault this.totalTicks) 500 :> _
       else
         { this with
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
@@ -60,4 +73,4 @@ and PostGame =
   static member CreateDefault ticksSurvived = { ticksSurvived = ticksSurvived }
   
   interface IGameScreen with
-    member this.Update (keyboardState: byte[]) = upcast this
+    member this.Update keyboardState = upcast this
