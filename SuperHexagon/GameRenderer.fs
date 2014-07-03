@@ -75,9 +75,8 @@ type Game =
   member private this.DrawObstacle playerSection (section, distance) =
     let x, y = Seq.nth section unitHexagonVertices
     let nextX, nextY = Seq.nth (section + 1 |> wrap 6) unitHexagonVertices
-    if playerSection = section && distance >|< (0.12, 0.15)
-    then GL.Color3 (1., 0., 0.)
-    else GL.Color3 (0., 1., 0.)
+    // Color the obstacle red if it's hitting the player or green if it's not
+    if playerCollidingWith playerSection (section, distance) then GL.Color3 (1., 0., 0.) else GL.Color3 (0., 1., 0.)
     this.GLDo BeginMode.Triangles (fun () ->
       GL.Vertex2 (nextX * distance, nextY * distance)
       GL.Vertex2 (x * distance, y * distance)

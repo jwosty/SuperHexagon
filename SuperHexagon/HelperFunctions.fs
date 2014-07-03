@@ -39,3 +39,7 @@ let xorshift x =
   x * 2685821657736338717UL
 
 let splitSeq seq = Seq.head seq, Seq.skip 1 seq
+
+let playerCollidingWith playerSection (obstacleSection: int, obstacleDistance) = (playerSection = obstacleSection) && obstacleDistance >|< (0.12, 0.15)
+let playerColliding playerSection obstacles = obstacles |> List.exists (playerCollidingWith playerSection)
+let angleToHexagonFace degrees = degrees * (6. / 360.) |> wrap 6. |> int

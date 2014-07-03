@@ -10,8 +10,6 @@ type Obstacles =
   
   member this.CreateRandomizedObstacle rand = Seq.head rand % 6UL |> int, 2.
   
-  member this.CheckCollision playerSection = this.obstacles |> List.exists (fun (section, distance) -> distance >|< (1.12, 1.125) && playerSection = section)
-  
   member this.Update totalTicks rand =
     let obstacles, rand =
       this.obstacles
