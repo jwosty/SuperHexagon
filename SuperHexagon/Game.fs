@@ -3,23 +3,27 @@ open SDL2
 open SuperHexagon.HelperFunctions
 open System
 
-type Obstacles =
-  { obstacles: (int * float) list }
+type Obstacle =
+  { section: int; distance: float }
   
-  static member CreateDefault() = { obstacles = [] }
+  member this.Update () =
+    let distance = this.distance - 0.01
+    if distance > 0. then Some({ this with distance = distance }) else None
   
-  member this.CreateRandomizedObstacle rand = Seq.head rand % 6UL |> int, 2.
+  member this.CollidingWithPlayer playerSection = (playerSection = this.section) && this.distance >|< (0.12, 0.14)
+
+module Obstacles =
+  let createRandomizedObstacle rand = { section = Seq.head rand % 6UL |> int; distance = 2. }
   
-  member this.Update totalTicks rand =
-    let obstacles, rand =
-      this.obstacles
-        |> List.map (fun (section, distance) -> section, distance - 0.01)
-        |> List.filter (fun (_, distance) -> distance > 0.)
-        |> (fun obstacles ->
-            if totalTicks % 50u = 0u
-            then this.CreateRandomizedObstacle rand :: this.CreateRandomizedObstacle (Seq.skip 1 rand) :: obstacles, Seq.skip 2 rand
-            else obstacles, rand)
-    { this with obstacles = obstacles }, rand
+  let update obstacles totalTicks rand =
+    obstacles
+      |> List.choose (fun (o: Obstacle) -> o.Update ())
+      |> (fun obstacles ->
+          if totalTicks % 50u = 0u
+          then createRandomizedObstacle rand :: createRandomizedObstacle (Seq.skip 1 rand) :: obstacles, Seq.skip 2 rand
+          else obstacles, rand)
+  
+  let collidingWithPlayer playerSection obstacles = List.exists (fun (o: Obstacle) -> o.CollidingWithPlayer playerSection) obstacles
 
 type IGameScreen =
   abstract Update: byte[] -> IGameScreen
@@ -56,12 +60,12 @@ type Game =
     playerAngle: int
     rotation: GameRotation
     screenAngle: float
-    obstacles: Obstacles }
+    obstacles: Obstacle list }
   
   static member CreateDefault () =
     let rand = Seq.unfold (fun x -> Some(x, xorshift x)) <| uint64 DateTime.Now.Ticks
     { totalTicks = 0u; rand = Seq.skip 1 rand;
-      playerAngle = int (Seq.head rand) % 360; rotation = GameRotation.CreateDefault (); screenAngle = 0.; obstacles = Obstacles.CreateDefault () }
+      playerAngle = int (Seq.head rand) % 360; rotation = GameRotation.CreateDefault (); screenAngle = 0.; obstacles = [] }
   
   member this.AddObstaclesIfNeeded obstacles = if this.totalTicks % 50u = 0u then (0, 1.) :: obstacles else obstacles
   
@@ -74,9 +78,9 @@ type Game =
         | 0uy, 1uy -> 10
         | _ -> 0
       let playerAngle = this.playerAngle + playerTurn
-      let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
+      let obstacles, rand = Obstacles.update this.obstacles this.totalTicks this.rand
       let rotation = this.rotation.Update keyboard
-      if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
+      if Obstacles.collidingWithPlayer (angleToHexagonFace (float playerAngle)) obstacles then
         Transition.CreateDefault this (PostGame.CreateDefault ()) 25 :> _
       else
         { this with

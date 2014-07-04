@@ -118,18 +118,18 @@ type Game =
     this.GLDo BeginMode.LineStrip (fun () ->
       unitHexagonVertices |> Seq.iter (fun (x, y) -> GL.Vertex2 (x * Game.CenterHexagonRadius, y * Game.CenterHexagonRadius)))
   
-  member this.DrawObstacle playerSection (section, distance) =
-    let x, y = Seq.nth section unitHexagonVertices
-    let nextX, nextY = Seq.nth (section + 1 |> wrap 6) unitHexagonVertices
+  member this.DrawObstacle playerSection obstacle =
+    let x, y = Seq.nth obstacle.section unitHexagonVertices
+    let nextX, nextY = Seq.nth (obstacle.section + 1 |> wrap 6) unitHexagonVertices
     GL.Color3 (0., 1., 0.)
     this.GLDo BeginMode.Triangles (fun () ->
-      GL.Vertex2 (nextX * distance, nextY * distance)
-      GL.Vertex2 (x * distance, y * distance)
-      GL.Vertex2 (x * distance * 1.1, y * distance * 1.1)
+      GL.Vertex2 (nextX * obstacle.distance, nextY * obstacle.distance)
+      GL.Vertex2 (x * obstacle.distance, y * obstacle.distance)
+      GL.Vertex2 (x * obstacle.distance * 1.1, y * obstacle.distance * 1.1)
       
-      GL.Vertex2 (nextX * distance, nextY * distance)
-      GL.Vertex2 (x * distance * 1.1, y * distance * 1.1)
-      GL.Vertex2 (nextX * distance * 1.1, nextY * distance * 1.1))
+      GL.Vertex2 (nextX * obstacle.distance, nextY * obstacle.distance)
+      GL.Vertex2 (x * obstacle.distance * 1.1, y * obstacle.distance * 1.1)
+      GL.Vertex2 (nextX * obstacle.distance * 1.1, nextY * obstacle.distance * 1.1))
   
   member this.DrawPlayer game =
     // Draw the player
@@ -147,7 +147,7 @@ type Game =
     this.GLMatrixDo (fun () ->
       GL.Rotate (game.screenAngle, 0., 0., 1.) // Rotation!
       this.DrawBackground ()
-      List.iter (this.DrawObstacle <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.obstacles
+      List.iter (this.DrawObstacle <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles
       this.DrawBackgroundHexagon ()
       this.DrawPlayer game)
   
