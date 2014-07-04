@@ -41,6 +41,7 @@ type AppDelegate() =
     | None -> ()
   
   override this.FinishedLaunching notification =
+    Renderers.Game.Init ()
     use gameRenderer = new Renderers.Game()
     this.RunGame (SuperHexagon.SuperHexagon.CreateDefault ()) gameRenderer
     ()

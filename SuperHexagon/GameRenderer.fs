@@ -10,6 +10,10 @@ open System.Runtime.InteropServices
 type Game =
   val Handle: nativeint
   val GLContext: nativeint
+  val GameFont: nativeint
+  val GameOverTextureID: int
+  val GameOverSurfacePtr: nativeint
+  val GameOverSurface: SDL.SDL_Surface
   
   static member DefaultWindowFlags =
     SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL ||| SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN |||
@@ -17,13 +21,17 @@ type Game =
   
   static member CenterHexagonRadius = 0.1
   
-  new(handle, glContext) =
-    { Handle = handle
-      GLContext = glContext }
-  
-  new() =
+  static member Init () =
     SDL.SDL_SetMainReady ()
     SDL.SDL_Init SDL.SDL_INIT_VIDEO |> ignore
+    SDL_ttf.TTF_Init () |> ignore
+  
+  new(handle, glContext, gameFont, gameOverTextureID, gameOverSurfacePtr, gameOverSurface) =
+    { Handle = handle; GLContext = glContext; GameFont = gameFont;
+      GameOverTextureID = gameOverTextureID; GameOverSurfacePtr = gameOverSurfacePtr
+      GameOverSurface = gameOverSurface }
+  
+  new() =
     
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_RED_SIZE, 8) |> ignore
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8) |> ignore
@@ -39,6 +47,7 @@ type Game =
 #if DEBUG
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, SDL.SDL_GLcontext.SDL_GL_CONTEXT_DEBUG_FLAG |> int) |> ignore
 #endif
+    
     
     let handle = SDL.SDL_CreateWindow ("SuperHexagon", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1024, 768, Game.DefaultWindowFlags)
     SDL.SDL_DisableScreenSaver ()
@@ -58,11 +67,17 @@ type Game =
     GL.Enable EnableCap.Blend
     // Enable multisampling (antialiasing)
     GL.Enable EnableCap.Multisample
+    GL.Enable EnableCap.Texture2D
+    
+    // Load the game font
+    let gameFont = SDL_ttf.TTF_OpenFont ("Larabie-BlueHighway.ttf", 48)
+    if gameFont = IntPtr.Zero then failwith <| "Failed to load game font: " + (SDL.SDL_GetError ())
+    let gameOverTextureID, gameOverSurfacePtr, gameOverSurface = renderGLFont gameFont "GAME OVER" (sdlColor (255uy, 255uy, 255uy, 255uy))
     
     // Show the window
     SDL.SDL_ShowWindow handle
     
-    new Game(handle, glContext)
+    new Game(handle, glContext, gameFont, gameOverTextureID, gameOverSurfacePtr, gameOverSurface)
   
   member this.GLMatrixDo render =
     GL.PushMatrix ()
@@ -134,6 +149,15 @@ type Game =
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
       this.DrawBackground ())
+      (*
+      GL.BindTexture (TextureTarget.Texture2D, this.GameOverTextureID)
+      this.GLDo BeginMode.Quads (fun () ->
+        GL.Vertex2 (-0.5, -0.5)
+        GL.Vertex2 ( 0.5, -0.5)
+        GL.Vertex2 ( 0.5,  0.5)
+        GL.Vertex2 (-0.5,  0.5))) *)
+    SDL.SDL_BlitSurface (this.GameOverSurfacePtr, IntPtr.Zero, this.Handle, IntPtr.Zero) |> ignore
+    ()
   
   member this.DrawScreen (gameScreen: IGameScreen) =
     match gameScreen with

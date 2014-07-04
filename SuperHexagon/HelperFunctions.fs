@@ -1,10 +1,16 @@
 ﻿module SuperHexagon.HelperFunctions
+open OpenTK.Graphics.OpenGL
 open SDL2
 open System
 open System.Diagnostics
 open System.Runtime.InteropServices
 
 let ptrToStructure<'T when 'T : struct> ptr = Marshal.PtrToStructure (ptr, typeof<'T>) :?> 'T
+
+let sdlColor (r, g, b, a) =
+  let mutable c = new SDL.SDL_Color()
+  c.r <- r; c.g <- g; c.b <- b; c.a <- a
+  c
 
 let rec pollEvents () =
   let event = ref Unchecked.defaultof<_>
@@ -48,3 +54,17 @@ let splitSeq seq = Seq.head seq, Seq.skip 1 seq
 let playerCollidingWith playerSection (obstacleSection: int, obstacleDistance) = (playerSection = obstacleSection) && obstacleDistance >|< (0.12, 0.15)
 let playerColliding playerSection obstacles = obstacles |> List.exists (playerCollidingWith playerSection)
 let angleToHexagonFace degrees = degrees * (6. / 360.) |> wrap 6. |> int
+
+let renderGLFont font text color =
+  let surfacePtr = SDL_ttf.TTF_RenderText_Solid (font, "test", color)
+  if surfacePtr = IntPtr.Zero then failwith <| "Failed to render text: " + (SDL.SDL_GetError ())
+  let surface = ptrToStructure<SDL.SDL_Surface> surfacePtr
+  let mutable textureID = 0
+  GL.GenTextures (1, &textureID)
+  let internalFormat, format =
+    if (surface.format |> ptrToStructure<SDL.SDL_PixelFormat>).BitsPerPixel = 4uy
+    then PixelInternalFormat.Rgba, PixelFormat.Rgba else PixelInternalFormat.Rgb, PixelFormat.Rgb
+  GL.TexImage2D (TextureTarget.Texture2D, 0, internalFormat, surface.w, surface.h, 0, format, PixelType.UnsignedByte, surface.pixels)
+  //GL.TexParameterI (TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, [|int All.Linear|])
+  //GL.TexParameterI (TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, [|int All.Linear|])
+  textureID, surfacePtr, surface
