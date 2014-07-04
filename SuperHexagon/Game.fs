@@ -61,7 +61,7 @@ type Game =
       let playerAngle = this.playerAngle + playerTurn
       let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
       if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
-        Transition.CreateDefault this (PostGame.CreateDefault ()) 50 :> _
+        Transition.CreateDefault this (PostGame.CreateDefault ()) 25 :> _
       else
         { this with
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
@@ -73,5 +73,5 @@ and PostGame() =
   interface IGameScreen with
     member this.Update keyboardState =
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
-      then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 50)
+      then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 25)
       else upcast this
