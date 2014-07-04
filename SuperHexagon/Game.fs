@@ -38,33 +38,49 @@ type Transition =
       then this.finish
       else upcast { this with progress = this.progress + 1 }
 
+type GameRotation =
+  { clockwise: bool; speed: float; duration: int; progress: int }
+  
+  static member CreateDefault () = { clockwise = true; speed = 1.; duration = 500; progress = 0 }
+  
+  member this.Delta = if this.clockwise then this.speed else -this.speed
+  
+  member this.Update keyboard =
+    if this.progress >= this.duration
+    then { this with clockwise = not this.clockwise; progress = 0 }
+    else { this with progress = this.progress + 1 }
+
 type Game =
   { totalTicks: uint32
     rand: uint64 seq
     playerAngle: int
+    rotation: GameRotation
+    screenAngle: float
     obstacles: Obstacles }
   
   static member CreateDefault () =
     { totalTicks = 0u; rand = Seq.unfold (fun x -> Some(x, xorshift x)) <| uint64 DateTime.Now.Ticks;
-      playerAngle = 0; obstacles = Obstacles.CreateDefault () }
+      playerAngle = 0; rotation = GameRotation.CreateDefault (); screenAngle = 0.; obstacles = Obstacles.CreateDefault () }
   
   member this.AddObstaclesIfNeeded obstacles = if this.totalTicks % 50u = 0u then (0, 1.) :: obstacles else obstacles
   
   interface IGameScreen with
-    member this.Update keyboardState =
+    member this.Update keyboard =
       let playerTurn =
         // Keyboard repeat events are unreliable, so just use the current keyboard state
-        match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
+        match keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
         | 1uy, 0uy -> -10
         | 0uy, 1uy -> 10
         | _ -> 0
       let playerAngle = this.playerAngle + playerTurn
       let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
+      let rotation = this.rotation.Update keyboard
       if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
         Transition.CreateDefault this (PostGame.CreateDefault ()) 25 :> _
       else
         { this with
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
+            rotation = rotation; screenAngle = this.screenAngle + rotation.Delta
             obstacles = obstacles; rand = rand } :> _
 
 and PostGame() =
