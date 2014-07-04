@@ -35,7 +35,7 @@ type Transition =
   interface IGameScreen with
     member this.Update keyboard =
       if (this.progress + 1) >= this.finishTicks
-      then printfn "Done"; this.finish
+      then this.finish
       else upcast { this with progress = this.progress + 1 }
 
 type Game =
@@ -51,7 +51,7 @@ type Game =
   member this.AddObstaclesIfNeeded obstacles = if this.totalTicks % 50u = 0u then (0, 1.) :: obstacles else obstacles
   
   interface IGameScreen with
-    member this.Update (keyboardState: byte[]) =
+    member this.Update keyboardState =
       let playerTurn =
         // Keyboard repeat events are unreliable, so just use the current keyboard state
         match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
@@ -73,4 +73,7 @@ and PostGame =
   static member CreateDefault ticksSurvived = { ticksSurvived = ticksSurvived }
   
   interface IGameScreen with
-    member this.Update keyboardState = upcast this
+    member this.Update keyboardState =
+      if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
+      then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 50)
+      else upcast this

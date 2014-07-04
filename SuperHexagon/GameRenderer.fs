@@ -177,6 +177,10 @@ type Game =
         let scale = float transition.progress / float transition.finishTicks + 1.
         GL.Scale (scale, scale, 1.)
         this.DrawBackground ())
+    | :? PostGame as postGame, :? SuperHexagon.Game as game -> this.GLMatrixDo (fun () ->
+        let scale = 2. - (float transition.progress / float transition.finishTicks)
+        GL.Scale (scale, scale, 1.)
+        this.DrawBackground ())
     | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   
   member this.DrawFrame ({ gameScreen = gameScreen }) =
