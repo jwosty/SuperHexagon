@@ -172,14 +172,15 @@ type Game =
     | :? SuperHexagon.Game as game, :? PostGame as postGame -> this.GLMatrixDo (fun () ->
         // Interpolate to get a smooth transition between the wrapped ending orientation and 0
         let endgameRotation = float game.totalTicks |> wrap (360. / 3.)
-        let weight = float transition.progress / float transition.finishTicks
-        GL.Rotate ((lerp (endgameRotation, 0.) (float transition.progress / float transition.finishTicks)), 0., 0., 1.)
         let scale = float transition.progress / float transition.finishTicks + 1.
         GL.Scale (scale, scale, 1.)
+        GL.Rotate ((lerp (endgameRotation, 0.) (float transition.progress / float transition.finishTicks)), 0., 0., 1.)
         this.DrawBackground ())
     | :? PostGame as postGame, :? SuperHexagon.Game as game -> this.GLMatrixDo (fun () ->
-        let scale = 2. - (float transition.progress / float transition.finishTicks)
+        let progress = float transition.progress / float transition.finishTicks
+        let scale = 2. - progress
         GL.Scale (scale, scale, 1.)
+        GL.Rotate (progress * 360. * (2./3.), 0., 0., 1.)
         this.DrawBackground ())
     | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   

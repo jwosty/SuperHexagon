@@ -61,7 +61,7 @@ type Game =
       let playerAngle = this.playerAngle + playerTurn
       let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
       if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
-        Transition.CreateDefault this (PostGame.CreateDefault this.totalTicks) 50 :> _
+        Transition.CreateDefault this (PostGame.CreateDefault ()) 50 :> _
       else
         { this with
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
