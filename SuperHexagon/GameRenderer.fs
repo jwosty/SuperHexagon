@@ -125,11 +125,11 @@ type Game =
     this.GLDo BeginMode.Triangles (fun () ->
       GL.Vertex2 (nextX * obstacle.distance, nextY * obstacle.distance)
       GL.Vertex2 (x * obstacle.distance, y * obstacle.distance)
-      GL.Vertex2 (x * obstacle.distance * 1.1, y * obstacle.distance * 1.1)
+      GL.Vertex2 (x * obstacle.distance * 1.3, y * obstacle.distance * 1.3)
       
       GL.Vertex2 (nextX * obstacle.distance, nextY * obstacle.distance)
-      GL.Vertex2 (x * obstacle.distance * 1.1, y * obstacle.distance * 1.1)
-      GL.Vertex2 (nextX * obstacle.distance * 1.1, nextY * obstacle.distance * 1.1))
+      GL.Vertex2 (x * obstacle.distance * 1.3, y * obstacle.distance * 1.3)
+      GL.Vertex2 (nextX * obstacle.distance * 1.3, nextY * obstacle.distance * 1.3))
   
   member this.DrawPlayer game =
     // Draw the player

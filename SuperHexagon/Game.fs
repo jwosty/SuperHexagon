@@ -10,11 +10,11 @@ type Obstacle =
     let distance = this.distance - 0.01
     if distance > 0. then Some({ this with distance = distance }) else None
   
-  member this.CollidingWithPlayer playerSection = (playerSection = this.section) && this.distance >|< (0.12, 0.14)
+  member this.CollidingWithPlayer playerSection = (playerSection = (wrap 6 this.section)) && this.distance >|< (0.12, 0.14)
 
 module Obstacles =
   // Configurations in easy mode
-  let easyGroups = [ [  2;3;4;5;6]; [1;2;3;  5;6]; [1;3;5]; [2;4;6] ] |> List.map (List.map (fun s -> { section = s; distance = 2.}))
+  let easyGroups = [ [  1;2;3;4;5]; [0;1;2;  4;5]; [0;2;4]; [1;3;5] ] |> List.map (List.map (fun s -> { section = s; distance = 2.}))
   
   let spawnGroup rand = easyGroups.[Seq.head rand |> int |> wrap easyGroups.Length]
   
