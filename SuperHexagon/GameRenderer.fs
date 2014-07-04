@@ -153,7 +153,7 @@ type Game =
   
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
-      GL.Scale (2., 2., 1.)
+      GL.Scale (5., 5., 1.)
       GL.Rotate (game.screenAngle, 0., 0., 1.)
       this.DrawBackground ()
       this.DrawBackgroundHexagon ())
@@ -179,14 +179,14 @@ type Game =
     | :? SuperHexagon.Game as game, :? PostGame as postGame -> this.GLMatrixDo (fun () ->
         // Interpolate to get a smooth transition between the wrapped ending orientation and 0
         let endgameRotation = game.screenAngle |> wrap (360. / 3.)
-        let scale = float transition.progress / float transition.finishTicks + 1.
+        let scale = float transition.progress / float transition.finishTicks * 4. + 1.
         GL.Scale (scale, scale, 1.)
         GL.Rotate ((lerp (endgameRotation, 0.) (float transition.progress / float transition.finishTicks)), 0., 0., 1.)
         this.DrawBackground ()
         this.DrawBackgroundHexagon ())
     | :? PostGame as postGame, :? SuperHexagon.Game as game -> this.GLMatrixDo (fun () ->
         let progress = float transition.progress / float transition.finishTicks
-        let scale = 2. - progress
+        let scale = 5. - 4. * progress
         GL.Scale (scale, scale, 1.)
         GL.Rotate (progress * 360. * (2./3.), 0., 0., 1.)
         this.DrawBackground ()
