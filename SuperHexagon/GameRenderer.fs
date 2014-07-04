@@ -156,7 +156,7 @@ type Game =
         GL.Vertex2 ( 0.5, -0.5)
         GL.Vertex2 ( 0.5,  0.5)
         GL.Vertex2 (-0.5,  0.5))) *)
-    SDL.SDL_BlitSurface (this.GameOverSurfacePtr, IntPtr.Zero, this.Handle, IntPtr.Zero) |> ignore
+    //SDL.SDL_BlitSurface (this.GameOverSurfacePtr, IntPtr.Zero, this.Handle, IntPtr.Zero) |> ignore
     ()
   
   member this.DrawScreen (gameScreen: IGameScreen) =
