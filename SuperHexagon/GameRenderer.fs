@@ -133,7 +133,6 @@ type Game =
   
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
-      GL.Rotate (float game.ticksSurvived, 0., 0., 1.) // Stay at the game's ending rotation so the screen doesn't snap back to zero
       this.DrawBackground ())
   
   member this.DrawScreen (gameScreen: IGameScreen) =
@@ -146,8 +145,13 @@ type Game =
   member this.DrawTransition (transition: Transition) =
     match transition.start, transition.finish with
     | :? SuperHexagon.Game as game, :? PostGame as postGame -> this.GLMatrixDo (fun () ->
+        // Interpolate to get a smooth transition between the wrapped ending orientation and 0
+        let endgameRotation = float game.totalTicks |> wrap (360. / 3.)
+        let weight = float transition.progress / float transition.finishTicks
+        GL.Rotate ((lerp (endgameRotation, 0.) (float transition.progress / float transition.finishTicks)), 0., 0., 1.)
+        
         this.DrawBackground ())
-    | _ -> this.DrawScreen transition.finish   // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
+    | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   
   member this.DrawFrame ({ gameScreen = gameScreen }) =
     GL.ClearColor (0.f, 0.f, 0.f, 1.f)        // Prepare for drawing

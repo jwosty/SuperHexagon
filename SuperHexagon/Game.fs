@@ -13,7 +13,7 @@ type Obstacles =
   member this.Update totalTicks rand =
     let obstacles, rand =
       this.obstacles
-        |> List.map (fun (section, distance) -> section, distance - 0.005)
+        |> List.map (fun (section, distance) -> section, distance - 0.01)
         |> List.filter (fun (_, distance) -> distance > 0.)
         |> (fun obstacles ->
             if totalTicks % 50u = 0u
@@ -35,7 +35,7 @@ type Transition =
   interface IGameScreen with
     member this.Update keyboard =
       if (this.progress + 1) >= this.finishTicks
-      then this.finish
+      then printfn "Done"; this.finish
       else upcast { this with progress = this.progress + 1 }
 
 type Game =
@@ -58,10 +58,10 @@ type Game =
         | 1uy, 0uy -> -10
         | 0uy, 1uy -> 10
         | _ -> 0
-      let playerAngle = this.playerAngle + playerTurn % 360
+      let playerAngle = this.playerAngle + playerTurn
       let obstacles, rand = this.obstacles.Update this.totalTicks this.rand
       if playerColliding (angleToHexagonFace (float playerAngle)) obstacles.obstacles then
-        Transition.CreateDefault this (PostGame.CreateDefault this.totalTicks) 500 :> _
+        Transition.CreateDefault this (PostGame.CreateDefault this.totalTicks) 50 :> _
       else
         { this with
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle

@@ -17,7 +17,7 @@ let quitRequested events (keyboardState: byte[]) =
   eventExists SDL.SDL_EventType.SDL_QUIT events || keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE] = 1uy ||
   ((keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LGUI] = 1uy || keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RGUI] = 1uy) && keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_Q] = 1uy)
 
-// Execute `dangerous` but guarentee that `important` gets executed even if an error is thrown.
+/// Execute `dangerous` but guarentee that `important` gets executed even if an error is thrown.
 let guarentee important dangerous =
   let e = try dangerous (); None with | e -> Some(e)
   important ()
@@ -28,6 +28,8 @@ let (>|<) v (min, max) = v >= min && v <= max
 let toRadians degrees = degrees * (Math.PI / 180.)
 let toDegrees radians = radians * (180. / Math.PI)
 let inline wrap max x = ((x % max) + max) % max
+/// Linear interpolation function, where applying 0 will result in `a` and 1 in `b`
+let lerp (a, b) (v: float) = a + ((b - a) * v)
 
 let unitHexagonVertices =
   seq {
