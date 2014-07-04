@@ -93,8 +93,8 @@ type Game =
       else
         { this with
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
-            rotation = rotation; screenAngle = this.screenAngle + rotation.Delta
-            obstacles = obstacles; rand = rand } :> _
+            rotation = rotation; screenAngle = this.screenAngle + rotation.Delta;
+            hue = wrap 360. (this.hue + 0.25); obstacles = obstacles; rand = rand } :> _
 
 and PostGame =
   { screenAngle: float; hue: float }
