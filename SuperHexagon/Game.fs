@@ -67,12 +67,13 @@ type Game =
     playerAngle: int
     rotation: GameRotation
     screenAngle: float
+    hue: float
     obstacles: Obstacle list }
   
   static member CreateDefault () =
     let rand = Seq.unfold (fun x -> Some(x, xorshift x)) <| uint64 DateTime.Now.Ticks
-    { totalTicks = 0u; rand = Seq.skip 1 rand;
-      playerAngle = int (Seq.head rand) % 360; rotation = GameRotation.CreateDefault (); screenAngle = 0.; obstacles = [] }
+    { totalTicks = 0u; rand = Seq.skip 1 rand; playerAngle = int (Seq.head rand) % 360;
+      rotation = GameRotation.CreateDefault (); screenAngle = 0.; hue = 240.; obstacles = [] }
   
   member this.AddObstaclesIfNeeded obstacles = if this.totalTicks % 50u = 0u then (0, 1.) :: obstacles else obstacles
   
@@ -96,9 +97,9 @@ type Game =
             obstacles = obstacles; rand = rand } :> _
 
 and PostGame =
-  { screenAngle: float }
+  { screenAngle: float; hue: float }
   
-  static member CreateDefault () = { screenAngle = 0. }
+  static member CreateDefault () = { screenAngle = 0.; hue = 120. }
   
   interface IGameScreen with
     member this.Update keyboardState =

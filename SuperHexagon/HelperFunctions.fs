@@ -67,7 +67,7 @@ let renderGLFont font text color =
   //GL.TexParameterI (TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, [|int All.Linear|])
   textureID, surfacePtr, surface
 
-let hsv2rgb h s v =
+let hsv2rgb (h, s, v) =
   let c = v * s
   let h' = (wrap 360. h) / 60.
   let x = c * (1. - abs (h' % 2. - 1.))
