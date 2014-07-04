@@ -13,14 +13,17 @@ type Obstacle =
   member this.CollidingWithPlayer playerSection = (playerSection = this.section) && this.distance >|< (0.12, 0.14)
 
 module Obstacles =
-  let createRandomizedObstacle rand = { section = Seq.head rand % 6UL |> int; distance = 2. }
+  // Configurations in easy mode
+  let easyGroups = [ [  2;3;4;5;6]; [1;2;3;  5;6] ] |> List.map (List.map (fun s -> { section = s; distance = 2.}))
+  
+  let spawnGroup rand = easyGroups.[Seq.head rand |> int |> wrap easyGroups.Length]
   
   let update obstacles totalTicks rand =
     obstacles
       |> List.choose (fun (o: Obstacle) -> o.Update ())
       |> (fun obstacles ->
           if totalTicks % 50u = 0u
-          then createRandomizedObstacle rand :: createRandomizedObstacle (Seq.skip 1 rand) :: obstacles, Seq.skip 2 rand
+          then obstacles @ spawnGroup rand, Seq.skip 1 rand
           else obstacles, rand)
   
   let collidingWithPlayer playerSection obstacles = List.exists (fun (o: Obstacle) -> o.CollidingWithPlayer playerSection) obstacles
