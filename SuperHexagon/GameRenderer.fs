@@ -66,13 +66,11 @@ type Game =
   
   member this.GLMatrixDo render =
     GL.PushMatrix ()
-    render ()
-    GL.PopMatrix ()
+    guarentee GL.PopMatrix render
   
   member this.GLDo beginMode render =
     GL.Begin beginMode
-    render ()
-    GL.End ()
+    guarentee GL.End render
   
   member this.DrawBackground () =
     this.GLDo BeginMode.Triangles (fun () ->
