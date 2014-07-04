@@ -143,7 +143,7 @@ type Game =
         GL.Vertex2 ( 0.    , -0.02)
         GL.Vertex2 ( 0.0125,  0.  )))
   
-  member this.DrawMidGame game =
+  member this.DrawMidGame (game: SuperHexagon.Game) =
     this.GLMatrixDo (fun () ->
       GL.Rotate (game.screenAngle, 0., 0., 1.) // Rotation!
       this.DrawBackground ()
@@ -154,6 +154,7 @@ type Game =
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
       GL.Scale (2., 2., 1.)
+      GL.Rotate (game.screenAngle, 0., 0., 1.)
       this.DrawBackground ()
       this.DrawBackgroundHexagon ())
       (*

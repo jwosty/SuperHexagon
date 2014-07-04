@@ -14,7 +14,7 @@ type Obstacle =
 
 module Obstacles =
   // Configurations in easy mode
-  let easyGroups = [ [  2;3;4;5;6]; [1;2;3;  5;6] ] |> List.map (List.map (fun s -> { section = s; distance = 2.}))
+  let easyGroups = [ [  2;3;4;5;6]; [1;2;3;  5;6]; [1;3;5]; [2;4;6] ] |> List.map (List.map (fun s -> { section = s; distance = 2.}))
   
   let spawnGroup rand = easyGroups.[Seq.head rand |> int |> wrap easyGroups.Length]
   
@@ -91,11 +91,13 @@ type Game =
             rotation = rotation; screenAngle = this.screenAngle + rotation.Delta
             obstacles = obstacles; rand = rand } :> _
 
-and PostGame() =
-  static member CreateDefault () = new PostGame()
+and PostGame =
+  { screenAngle: float }
+  
+  static member CreateDefault () = { screenAngle = 0. }
   
   interface IGameScreen with
     member this.Update keyboardState =
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
       then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 15)
-      else upcast this
+      else upcast { this with screenAngle = this.screenAngle - 0.25 }
