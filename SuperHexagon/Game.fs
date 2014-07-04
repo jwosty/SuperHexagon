@@ -67,10 +67,8 @@ type Game =
             totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
             obstacles = obstacles; rand = rand } :> _
 
-and PostGame =
-  { ticksSurvived: uint32 }
-  
-  static member CreateDefault ticksSurvived = { ticksSurvived = ticksSurvived }
+and PostGame() =
+  static member CreateDefault () = new PostGame()
   
   interface IGameScreen with
     member this.Update keyboardState =
