@@ -148,6 +148,7 @@ type Game =
   
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
+      GL.Scale (2., 2., 1.)
       this.DrawBackground ())
       (*
       GL.BindTexture (TextureTarget.Texture2D, this.GameOverTextureID)
@@ -173,7 +174,8 @@ type Game =
         let endgameRotation = float game.totalTicks |> wrap (360. / 3.)
         let weight = float transition.progress / float transition.finishTicks
         GL.Rotate ((lerp (endgameRotation, 0.) (float transition.progress / float transition.finishTicks)), 0., 0., 1.)
-        
+        let scale = float transition.progress / float transition.finishTicks + 1.
+        GL.Scale (scale, scale, 1.)
         this.DrawBackground ())
     | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   
