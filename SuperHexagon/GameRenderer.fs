@@ -8,7 +8,7 @@ open System
 open System.Runtime.InteropServices
 
 type Game =
-  val Handle: nativeint
+  val WindowHandle: nativeint
   val GLContext: nativeint
   val GameFont: nativeint
   val GameOverTextureID: int
@@ -26,8 +26,8 @@ type Game =
     SDL.SDL_Init SDL.SDL_INIT_VIDEO |> ignore
     SDL_ttf.TTF_Init () |> ignore
   
-  new(handle, glContext, gameFont, gameOverTextureID, gameOverSurfacePtr, gameOverSurface) =
-    { Handle = handle; GLContext = glContext; GameFont = gameFont;
+  new(windowHandle, glContext, gameFont, gameOverTextureID, gameOverSurfacePtr, gameOverSurface) =
+    { WindowHandle = windowHandle; GLContext = glContext; GameFont = gameFont;
       GameOverTextureID = gameOverTextureID; GameOverSurfacePtr = gameOverSurfacePtr
       GameOverSurface = gameOverSurface }
   
@@ -196,11 +196,11 @@ type Game =
     GL.ClearColor (0.f, 0.f, 0.f, 1.f)        // Prepare for drawing
     GL.Clear ClearBufferMask.ColorBufferBit   // ^^
     this.DrawScreen gameScreen                // Draw
-    SDL.SDL_GL_SwapWindow this.Handle         // Show the result
+    SDL.SDL_GL_SwapWindow this.WindowHandle   // Make the result visible
 
-  member this.Window = SDL.SDL_GetWindowSurface this.Handle |> ptrToStructure<SDL.SDL_Surface>
+  member this.Window = SDL.SDL_GetWindowSurface this.WindowHandle |> ptrToStructure<SDL.SDL_Surface>
 
   interface IDisposable with
     override this.Dispose () =
       SDL.SDL_GL_DeleteContext this.GLContext
-      SDL.SDL_DestroyWindow this.Handle
+      SDL.SDL_DestroyWindow this.WindowHandle

@@ -32,7 +32,7 @@ type AppDelegate() =
         if elapsed < 20. then Thread.Sleep (20. - elapsed |> floor |> int)
         
         if titleUpdateTimer.ElapsedMilliseconds >= 1000L then
-          SDL.SDL_SetWindowTitle (gameRenderer.Handle, ("Super Hexagon (" + (1000. / ticksToMilliseconds frameTimer.ElapsedTicks |> int |> string) + " FPS)"))
+          SDL.SDL_SetWindowTitle (gameRenderer.WindowHandle, ("Super Hexagon (" + (1000. / ticksToMilliseconds frameTimer.ElapsedTicks |> int |> string) + " FPS)"))
           titleUpdateTimer.Reset ()
         
         frameTimer.Reset ()
