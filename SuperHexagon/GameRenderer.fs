@@ -101,8 +101,9 @@ type Game =
               (x, y), i + 1)
             (Seq.last unitHexagonVertices, 0)
           |> ignore)
-    // Draw the inner hexagon
-    GL.Color3 (0., 1., 0.)
+  
+  member this.DrawBackgroundHexagon () =
+    GL.Color3 (0., 0.15, 0.)
     this.GLDo BeginMode.Triangles (fun () ->
       unitHexagonVertices
         |> Seq.fold (fun (lastX: float, lastY) (x, y) ->
@@ -112,6 +113,10 @@ type Game =
             x, y)
           (Seq.last unitHexagonVertices)
         |> ignore)
+    // Outline that hexagon
+    GL.Color3 (0., 1.0, 0.)
+    this.GLDo BeginMode.LineStrip (fun () ->
+      unitHexagonVertices |> Seq.iter (fun (x, y) -> GL.Vertex2 (x * Game.CenterHexagonRadius, y * Game.CenterHexagonRadius)))
   
   member this.DrawObstacle playerSection (section, distance) =
     let x, y = Seq.nth section unitHexagonVertices
@@ -142,13 +147,15 @@ type Game =
     this.GLMatrixDo (fun () ->
       GL.Rotate (float game.totalTicks, 0., 0., 1.) // Rotation!
       this.DrawBackground ()
-      this.DrawPlayer game
-      List.iter (this.DrawObstacle <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.obstacles)
+      List.iter (this.DrawObstacle <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.obstacles
+      this.DrawBackgroundHexagon ()
+      this.DrawPlayer game)
   
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
       GL.Scale (2., 2., 1.)
-      this.DrawBackground ())
+      this.DrawBackground ()
+      this.DrawBackgroundHexagon ())
       (*
       GL.BindTexture (TextureTarget.Texture2D, this.GameOverTextureID)
       this.GLDo BeginMode.Quads (fun () ->
@@ -174,13 +181,15 @@ type Game =
         let scale = float transition.progress / float transition.finishTicks + 1.
         GL.Scale (scale, scale, 1.)
         GL.Rotate ((lerp (endgameRotation, 0.) (float transition.progress / float transition.finishTicks)), 0., 0., 1.)
-        this.DrawBackground ())
+        this.DrawBackground ()
+        this.DrawBackgroundHexagon ())
     | :? PostGame as postGame, :? SuperHexagon.Game as game -> this.GLMatrixDo (fun () ->
         let progress = float transition.progress / float transition.finishTicks
         let scale = 2. - progress
         GL.Scale (scale, scale, 1.)
         GL.Rotate (progress * 360. * (2./3.), 0., 0., 1.)
-        this.DrawBackground ())
+        this.DrawBackground ()
+        this.DrawBackgroundHexagon ())
     | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   
   member this.DrawFrame ({ gameScreen = gameScreen }) =
