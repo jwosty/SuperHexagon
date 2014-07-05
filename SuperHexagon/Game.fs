@@ -45,41 +45,41 @@ type IGameScreen =
 
 type Transition =
   { start: IGameScreen; finish: IGameScreen
-    totalDuration: float; time: float }
+    gameTimeDuration: float; gameTime: float }
   
   static member CreateDefault start finish totalDuration =
     { start = start; finish = finish
-      totalDuration = totalDuration; time = 0. }
+      gameTimeDuration = totalDuration; gameTime = 0. }
   
   interface IGameScreen with
     member this.Update keyboard timeFactor =
-      if (this.time + 1.) >= this.totalDuration
+      if (this.gameTime + 1.) >= this.gameTimeDuration
       then this.finish
-      else upcast { this with time = this.time + timeFactor }
+      else upcast { this with gameTime = this.gameTime + timeFactor }
 
 type GameRotation =
-  { clockwise: bool; speed: float; duration: float; progress: float }
+  { screenAngle: float; clockwise: bool; speed: float
+    duration: float; gameTime: float }
   
-  static member CreateDefault () = { clockwise = true; speed = 1.; duration = 500.; progress = 0. }
-  
-  member this.Delta timeFactor = (if this.clockwise then timeFactor else -timeFactor) * this.speed
+  static member CreateDefault () =
+    { screenAngle = 0.; clockwise = true; speed = 1.
+      duration = 500.; gameTime = 0. }
   
   member this.Update keyboard timeFactor =
-    if this.progress >= this.duration
-    then { this with clockwise = not this.clockwise; progress = 0. }
-    else { this with progress = this.progress + timeFactor }
+    if this.gameTime >= this.duration
+    then { this with clockwise = not this.clockwise; gameTime = 0. }
+    else { this with gameTime = this.gameTime + timeFactor; screenAngle = this.screenAngle + ((if this.clockwise then timeFactor else -timeFactor) * this.speed) }
 
 type Game =
-  { time: float; rand: uint64 seq; playerAngle: float
-    rotation: GameRotation; screenAngle: float; hue: float;
-    obstacles: Obstacles }
+  { gameTime: float; rand: uint64 seq; playerAngle: float
+    rotation: GameRotation; hue: float; obstacles: Obstacles }
   
   static member CreateDefault () =
     let rand = Seq.unfold (fun x -> Some(x, xorshift x)) <| uint64 DateTime.Now.Ticks
-    { time = 0.; rand = Seq.skip 1 rand; playerAngle = float (Seq.head rand) % 360.;
-      rotation = GameRotation.CreateDefault (); screenAngle = 0.; hue = 240.; obstacles = Obstacles.CreateDefault () }
+    { gameTime = 0.; rand = Seq.skip 1 rand; playerAngle = float (Seq.head rand) % 360.;
+      rotation = GameRotation.CreateDefault (); hue = 240.; obstacles = Obstacles.CreateDefault () }
   
-  member this.AddObstaclesIfNeeded obstacles = if this.time % 50. = 0. then (0, 1.) :: obstacles else obstacles
+  member this.AddObstaclesIfNeeded obstacles = if this.gameTime % 50. = 0. then (0, 1.) :: obstacles else obstacles
   
   interface IGameScreen with
     member this.Update keyboard timeFactor =
@@ -96,8 +96,7 @@ type Game =
         Transition.CreateDefault this (PostGame.CreateDefault ()) 25. :> _
       else
         { this with
-            time = this.time + timeFactor; playerAngle = playerAngle
-            rotation = rotation; screenAngle = this.screenAngle + (rotation.Delta timeFactor);
+            gameTime = this.gameTime + timeFactor; playerAngle = playerAngle; rotation = rotation
             hue = wrap 360. (this.hue + (0.25 * timeFactor)); obstacles = obstacles; rand = rand } :> _
 
 and PostGame =
