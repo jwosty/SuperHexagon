@@ -107,7 +107,4 @@
       <Kind>Dynamic</Kind>
     </NativeReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Larabie-BlueHighway.ttf" />
-  </ItemGroup>
 </Project>

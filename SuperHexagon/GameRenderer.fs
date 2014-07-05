@@ -10,10 +10,6 @@ open System.Runtime.InteropServices
 type Game =
   val WindowHandle: nativeint
   val GLContext: nativeint
-  val GameFont: nativeint
-  val GameOverTextureID: int
-  val GameOverSurfacePtr: nativeint
-  val GameOverSurface: SDL.SDL_Surface
   
   static member DefaultWindowFlags =
     SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL ||| SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN |||
@@ -26,10 +22,7 @@ type Game =
     SDL.SDL_Init SDL.SDL_INIT_VIDEO |> ignore
     SDL_ttf.TTF_Init () |> ignore
   
-  new(windowHandle, glContext, gameFont, gameOverTextureID, gameOverSurfacePtr, gameOverSurface) =
-    { WindowHandle = windowHandle; GLContext = glContext; GameFont = gameFont;
-      GameOverTextureID = gameOverTextureID; GameOverSurfacePtr = gameOverSurfacePtr
-      GameOverSurface = gameOverSurface }
+  new(windowHandle, glContext) = { WindowHandle = windowHandle; GLContext = glContext }
   
   new() =
     
@@ -49,16 +42,16 @@ type Game =
 #endif
     
     
-    let handle = SDL.SDL_CreateWindow ("SuperHexagon", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1024, 768, Game.DefaultWindowFlags)
+    let windowHandle = SDL.SDL_CreateWindow ("SuperHexagon", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1024, 768, Game.DefaultWindowFlags)
     SDL.SDL_DisableScreenSaver ()
     
     // Create OpenGL context
-    let glContext = SDL.SDL_GL_CreateContext handle
+    let glContext = SDL.SDL_GL_CreateContext windowHandle
     GraphicsContext.CurrentContext <- glContext
     GL.LoadAll ()
     
     let mutable w, h = 0, 0
-    SDL.SDL_GetWindowSize (handle, &w, &h)
+    SDL.SDL_GetWindowSize (windowHandle, &w, &h)
     let w, h = float w, float h
     // Scale so that the viewport doesn't appear stretched, and invert the Y axis
     GL.Scale ((min w h) / w, (min w h) / -h, 1.)
@@ -69,15 +62,10 @@ type Game =
     GL.Enable EnableCap.Multisample
     GL.Enable EnableCap.Texture2D
     
-    // Load the game font
-    let gameFont = SDL_ttf.TTF_OpenFont ("Larabie-BlueHighway.ttf", 48)
-    if gameFont = IntPtr.Zero then failwith <| "Failed to load game font: " + (SDL.SDL_GetError ())
-    let gameOverTextureID, gameOverSurfacePtr, gameOverSurface = renderGLFont gameFont "GAME OVER" (sdlColor (255uy, 255uy, 255uy, 255uy))
-    
     // Show the window
-    SDL.SDL_ShowWindow handle
+    SDL.SDL_ShowWindow windowHandle
     
-    new Game(handle, glContext, gameFont, gameOverTextureID, gameOverSurfacePtr, gameOverSurface)
+    new Game(windowHandle, glContext)
   
   member this.GLMatrixDo render =
     GL.PushMatrix ()

@@ -53,20 +53,6 @@ let splitSeq seq = Seq.head seq, Seq.skip 1 seq
 
 let angleToHexagonFace degrees = degrees * (6. / 360.) |> wrap 6. |> int
 
-let renderGLFont font text color =
-  let surfacePtr = SDL_ttf.TTF_RenderText_Solid (font, "test", color)
-  if surfacePtr = IntPtr.Zero then failwith <| "Failed to render text: " + (SDL.SDL_GetError ())
-  let surface = ptrToStructure<SDL.SDL_Surface> surfacePtr
-  let mutable textureID = 0
-  GL.GenTextures (1, &textureID)
-  let internalFormat, format =
-    if (surface.format |> ptrToStructure<SDL.SDL_PixelFormat>).BitsPerPixel = 4uy
-    then PixelInternalFormat.Rgba, PixelFormat.Rgba else PixelInternalFormat.Rgb, PixelFormat.Rgb
-  GL.TexImage2D (TextureTarget.Texture2D, 0, internalFormat, surface.w, surface.h, 0, format, PixelType.UnsignedByte, surface.pixels)
-  //GL.TexParameterI (TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, [|int All.Linear|])
-  //GL.TexParameterI (TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, [|int All.Linear|])
-  textureID, surfacePtr, surface
-
 let hsv2rgb (h, s, v) =
   let c = v * s
   let h' = (wrap 360. h) / 60.
