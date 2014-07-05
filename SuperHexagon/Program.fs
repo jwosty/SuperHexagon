@@ -25,7 +25,7 @@ module GameLoop =
   let titleUpdateTimer = new Stopwatch()
   let frameTimer = new Stopwatch()
   
-  let rec runGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastFrameTime =
+  let rec runGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastTimeFactor =
 #endif
     frameTimer.Start()
     if not titleUpdateTimer.IsRunning then titleUpdateTimer.Start ()
@@ -48,7 +48,7 @@ module GameLoop =
         if titleUpdateTimer.ElapsedMilliseconds >= 1000L then
           SDL.SDL_SetWindowTitle (gameRenderer.WindowHandle, ("Super Hexagon (" + (1000. / ticksToMilliseconds frameTimer.ElapsedTicks |> int |> string) + " FPS)"))
           titleUpdateTimer.Reset ()
-        let timeFactor = 18. / ticksToMilliseconds frameTimer.ElapsedTicks  // The game runs at something in the neighborhood of 18 milliseconds/frame
+        let timeFactor = (ticksToMilliseconds frameTimer.ElapsedTicks) / 18.  // The game runs at something in the neighborhood of 18 milliseconds/frame
         frameTimer.Reset ()
         
         runGame game gameRenderer timeFactor

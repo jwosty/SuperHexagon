@@ -31,7 +31,7 @@ type Obstacles =
       this.items
         |> List.choose (fun (o: Obstacle) -> o.Update ())
         |> (fun obstacles ->
-            if this.timeUntilGroupSpawn < 0.
+            if this.timeUntilGroupSpawn <= 0.
             then obstacles @ Obstacles.SpawnGroup rand, Seq.skip 1 rand
             else obstacles, rand)
     { this with
