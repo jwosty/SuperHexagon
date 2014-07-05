@@ -43,9 +43,6 @@ let unitHexagonVertices =
       let p = Math.PI * 2. * ((i + 0.5 |> wrap 6.) / 6.)
       cos p, sin p }
 
-// Reverse triangle wave, where i is the interval
-let rtri i x = floor (x / i) - (x / i) + 1.
-
 let xorshift x =
   let x = x ^^^ (x >>> 12)
   let x = x ^^^ (x <<< 25)

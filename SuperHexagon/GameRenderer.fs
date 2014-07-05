@@ -140,7 +140,7 @@ type Game =
     this.GLMatrixDo (fun () ->
       GL.Rotate (game.rotation.screenAngle, 0., 0., 1.) // Rotation!
       let rgb = hsv2rgb (game.hue,1.,1.)
-      let pulse = sin (game.gameTime / 16.)
+      let pulse = sin (game.gameTime / 16.) * 2.
       this.DrawBackground rgb
       List.iter (this.DrawObstacle rgb pulse <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.items
       this.DrawBackgroundHexagon pulse rgb
