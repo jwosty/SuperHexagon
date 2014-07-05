@@ -18,14 +18,14 @@ type AppDelegate() =
   override this.ApplicationShouldTerminateAfterLastWindowClosed(sender) =
     true
   
-  member this.RunGame (game: SuperHexagon) (gameRenderer: Renderers.Game) =
+  member this.RunGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastTimeFactor =
     let runGame = this.RunGame
 #else
 module GameLoop =
   let titleUpdateTimer = new Stopwatch()
   let frameTimer = new Stopwatch()
   
-  let rec runGame (game: SuperHexagon) (gameRenderer: Renderers.Game) =
+  let rec runGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastFrameTime =
 #endif
     frameTimer.Start()
     if not titleUpdateTimer.IsRunning then titleUpdateTimer.Start ()
@@ -37,7 +37,7 @@ module GameLoop =
     let keyboardState: byte[] = Array.zeroCreate length
     Marshal.Copy (keyboardPtr, keyboardState, 0, length)
     
-    match game.Update events keyboardState with
+    match game.Update events keyboardState lastTimeFactor with
     | Some(game) ->
         gameRenderer.DrawFrame game
         
@@ -48,10 +48,10 @@ module GameLoop =
         if titleUpdateTimer.ElapsedMilliseconds >= 1000L then
           SDL.SDL_SetWindowTitle (gameRenderer.WindowHandle, ("Super Hexagon (" + (1000. / ticksToMilliseconds frameTimer.ElapsedTicks |> int |> string) + " FPS)"))
           titleUpdateTimer.Reset ()
-        
+        let timeFactor = 18. / ticksToMilliseconds frameTimer.ElapsedTicks  // The game runs at something in the neighborhood of 18 milliseconds/frame
         frameTimer.Reset ()
         
-        runGame game gameRenderer
+        runGame game gameRenderer timeFactor
     | None -> ()
   
 #if MONOMAC
@@ -62,7 +62,7 @@ module GameLoop =
 #endif
     Renderers.Game.Init ()
     use gameRenderer = new Renderers.Game()
-    runGame (SuperHexagon.SuperHexagon.CreateDefault ()) gameRenderer
+    runGame (SuperHexagon.SuperHexagon.CreateDefault ()) gameRenderer 1.
 
 module main =
   [<EntryPoint>]

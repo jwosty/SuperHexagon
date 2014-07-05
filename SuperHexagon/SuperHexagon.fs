@@ -7,7 +7,7 @@ type SuperHexagon =
   
   static member CreateDefault () = { gameScreen = PostGame.CreateDefault () :> IGameScreen }
   
-  member this.Update events keyboardState =
+  member this.Update events keyboardState timeFactor =
     if quitRequested events keyboardState
     then None
-    else Some({this with gameScreen = this.gameScreen.Update keyboardState })
+    else Some({this with gameScreen = this.gameScreen.Update keyboardState timeFactor })

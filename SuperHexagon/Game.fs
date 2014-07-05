@@ -12,89 +12,93 @@ type Obstacle =
   
   member this.CollidingWithPlayer playerSection = (playerSection = (wrap 6 this.section)) && this.distance >|< (0.12, 0.14)
 
-module Obstacles =
+type Obstacles =
+  { items: Obstacle list; timeUntilGroupSpawn: float }
+  
+  static member CreateDefault () = { items = []; timeUntilGroupSpawn = 0. }
+  
   // Configurations in easy mode
-  let easyGroups =
+  static member EasyGroups =
     [ [  1;2;3;4;5]; [0;1;2;  4;5]
       [0;2;4];       [1;3;5]
       [0;1;3;4];     [1;2;4;5];     [2;3;5;0] ]
       |> List.map (List.map (fun s -> { section = s; distance = 2.}))
   
-  let spawnGroup rand = easyGroups.[Seq.head rand |> int |> wrap easyGroups.Length]
+  static member SpawnGroup rand = Obstacles.EasyGroups.[Seq.head rand |> int |> wrap Obstacles.EasyGroups.Length]
   
-  let update obstacles totalTicks rand =
-    obstacles
-      |> List.choose (fun (o: Obstacle) -> o.Update ())
-      |> (fun obstacles ->
-          if totalTicks % 50u = 0u
-          then obstacles @ spawnGroup rand, Seq.skip 1 rand
-          else obstacles, rand)
+  member this.Update timeFactor rand =
+    let items, rand =
+      this.items
+        |> List.choose (fun (o: Obstacle) -> o.Update ())
+        |> (fun obstacles ->
+            if this.timeUntilGroupSpawn < 0.
+            then obstacles @ Obstacles.SpawnGroup rand, Seq.skip 1 rand
+            else obstacles, rand)
+    { this with
+        items = items;
+        timeUntilGroupSpawn = (if this.timeUntilGroupSpawn > 0. then this.timeUntilGroupSpawn - timeFactor else 50.) }, rand
   
-  let collidingWithPlayer playerSection obstacles = List.exists (fun (o: Obstacle) -> o.CollidingWithPlayer playerSection) obstacles
+  member this.CollidingWithPlayer playerSection = List.exists (fun (o: Obstacle) -> o.CollidingWithPlayer playerSection) this.items
 
 type IGameScreen =
-  abstract Update: byte[] -> IGameScreen
+  abstract Update: keyboardState:byte[] -> timeFactor:float -> IGameScreen
 
 type Transition =
   { start: IGameScreen; finish: IGameScreen
-    finishTicks: int; progress: int }
+    totalDuration: float; time: float }
   
-  static member CreateDefault start finish finishTicks =
+  static member CreateDefault start finish totalDuration =
     { start = start; finish = finish
-      finishTicks = finishTicks; progress = 0 }
+      totalDuration = totalDuration; time = 0. }
   
   interface IGameScreen with
-    member this.Update keyboard =
-      if (this.progress + 1) >= this.finishTicks
+    member this.Update keyboard timeFactor =
+      if (this.time + 1.) >= this.totalDuration
       then this.finish
-      else upcast { this with progress = this.progress + 1 }
+      else upcast { this with time = this.time + timeFactor }
 
 type GameRotation =
-  { clockwise: bool; speed: float; duration: int; progress: int }
+  { clockwise: bool; speed: float; duration: float; progress: float }
   
-  static member CreateDefault () = { clockwise = true; speed = 1.; duration = 500; progress = 0 }
+  static member CreateDefault () = { clockwise = true; speed = 1.; duration = 500.; progress = 0. }
   
-  member this.Delta = if this.clockwise then this.speed else -this.speed
+  member this.Delta timeFactor = (if this.clockwise then timeFactor else -timeFactor) * this.speed
   
-  member this.Update keyboard =
+  member this.Update keyboard timeFactor =
     if this.progress >= this.duration
-    then { this with clockwise = not this.clockwise; progress = 0 }
-    else { this with progress = this.progress + 1 }
+    then { this with clockwise = not this.clockwise; progress = 0. }
+    else { this with progress = this.progress + timeFactor }
 
 type Game =
-  { totalTicks: uint32
-    rand: uint64 seq
-    playerAngle: int
-    rotation: GameRotation
-    screenAngle: float
-    hue: float
-    obstacles: Obstacle list }
+  { time: float; rand: uint64 seq; playerAngle: float
+    rotation: GameRotation; screenAngle: float; hue: float;
+    obstacles: Obstacles }
   
   static member CreateDefault () =
     let rand = Seq.unfold (fun x -> Some(x, xorshift x)) <| uint64 DateTime.Now.Ticks
-    { totalTicks = 0u; rand = Seq.skip 1 rand; playerAngle = int (Seq.head rand) % 360;
-      rotation = GameRotation.CreateDefault (); screenAngle = 0.; hue = 240.; obstacles = [] }
+    { time = 0.; rand = Seq.skip 1 rand; playerAngle = float (Seq.head rand) % 360.;
+      rotation = GameRotation.CreateDefault (); screenAngle = 0.; hue = 240.; obstacles = Obstacles.CreateDefault () }
   
-  member this.AddObstaclesIfNeeded obstacles = if this.totalTicks % 50u = 0u then (0, 1.) :: obstacles else obstacles
+  member this.AddObstaclesIfNeeded obstacles = if this.time % 50. = 0. then (0, 1.) :: obstacles else obstacles
   
   interface IGameScreen with
-    member this.Update keyboard =
+    member this.Update keyboard timeFactor =
       let playerTurn =
         // Keyboard repeat events are unreliable, so just use the current keyboard state
         match keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
-        | 1uy, 0uy -> -10
-        | 0uy, 1uy -> 10
-        | _ -> 0
+        | 1uy, 0uy -> -10. * timeFactor
+        | 0uy, 1uy -> 10. * timeFactor
+        | _ -> 0.
       let playerAngle = this.playerAngle + playerTurn
-      let obstacles, rand = Obstacles.update this.obstacles this.totalTicks this.rand
-      let rotation = this.rotation.Update keyboard
-      if Obstacles.collidingWithPlayer (angleToHexagonFace (float playerAngle)) obstacles then
-        Transition.CreateDefault this (PostGame.CreateDefault ()) 25 :> _
+      let obstacles, rand = this.obstacles.Update timeFactor this.rand
+      let rotation = this.rotation.Update keyboard timeFactor
+      if this.obstacles.CollidingWithPlayer (angleToHexagonFace (float playerAngle)) then
+        Transition.CreateDefault this (PostGame.CreateDefault ()) 25. :> _
       else
         { this with
-            totalTicks = this.totalTicks + 1u; playerAngle = playerAngle
-            rotation = rotation; screenAngle = this.screenAngle + rotation.Delta;
-            hue = wrap 360. (this.hue + 0.25); obstacles = obstacles; rand = rand } :> _
+            time = this.time + timeFactor; playerAngle = playerAngle
+            rotation = rotation; screenAngle = this.screenAngle + (rotation.Delta timeFactor);
+            hue = wrap 360. (this.hue + (0.25 * timeFactor)); obstacles = obstacles; rand = rand } :> _
 
 and PostGame =
   { screenAngle: float; hue: float }
@@ -102,7 +106,7 @@ and PostGame =
   static member CreateDefault () = { screenAngle = 0.; hue = 120. }
   
   interface IGameScreen with
-    member this.Update keyboardState =
+    member this.Update keyboardState timeFactor =
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
-      then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 15)
-      else upcast { this with screenAngle = this.screenAngle - 0.25 }
+      then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 15.)
+      else upcast { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
