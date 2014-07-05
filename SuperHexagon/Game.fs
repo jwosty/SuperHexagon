@@ -86,8 +86,8 @@ type Game =
       let playerTurn =
         // Keyboard repeat events are unreliable, so just use the current keyboard state
         match keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
-        | 1uy, 0uy -> -10. * timeFactor
-        | 0uy, 1uy -> 10. * timeFactor
+        | 1uy, 0uy -> -7.5 * timeFactor
+        | 0uy, 1uy -> 7.5 * timeFactor
         | _ -> 0.
       let playerAngle = this.playerAngle + playerTurn
       let obstacles, rand = this.obstacles.Update timeFactor this.rand
