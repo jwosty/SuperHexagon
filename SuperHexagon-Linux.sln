@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDL2-CS", "SDL2-CS\SDL2-CS.csproj", "{85480198-8711-4355-830E-72FD794AD3F6}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "SuperHexagon-Linux", "SuperHexagon\SuperHexagon-Linux.fsproj", "{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		AppStore|Any CPU = AppStore|Any CPU
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{85480198-8711-4355-830E-72FD794AD3F6}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{85480198-8711-4355-830E-72FD794AD3F6}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{85480198-8711-4355-830E-72FD794AD3F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85480198-8711-4355-830E-72FD794AD3F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85480198-8711-4355-830E-72FD794AD3F6}.Debug|x64.ActiveCfg = Debug|x64
+		{85480198-8711-4355-830E-72FD794AD3F6}.Debug|x64.Build.0 = Debug|x64
+		{85480198-8711-4355-830E-72FD794AD3F6}.Debug|x86.ActiveCfg = Debug|x86
+		{85480198-8711-4355-830E-72FD794AD3F6}.Debug|x86.Build.0 = Debug|x86
+		{85480198-8711-4355-830E-72FD794AD3F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85480198-8711-4355-830E-72FD794AD3F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85480198-8711-4355-830E-72FD794AD3F6}.Release|x64.ActiveCfg = Release|x64
+		{85480198-8711-4355-830E-72FD794AD3F6}.Release|x64.Build.0 = Release|x64
+		{85480198-8711-4355-830E-72FD794AD3F6}.Release|x86.ActiveCfg = Release|x86
+		{85480198-8711-4355-830E-72FD794AD3F6}.Release|x86.Build.0 = Release|x86
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Release|x64.Build.0 = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB3CBF11-E3BA-4B06-84FA-7B758F7CC7EA}.Release|x86.Build.0 = Release|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.AppStore|Any CPU.ActiveCfg = AppStore|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.AppStore|Any CPU.Build.0 = AppStore|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Debug|x64.Build.0 = Debug|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Debug|x86.Build.0 = Debug|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Release|x64.ActiveCfg = Release|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Release|x64.Build.0 = Release|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Release|x86.ActiveCfg = Release|Any CPU
+		{3AC64670-353D-42FE-AA97-CD81EAC83964}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = SuperHexagon\SuperHexagon-Linux.fsproj
+	EndGlobalSection
+EndGlobal
