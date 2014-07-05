@@ -43,12 +43,12 @@ module GameLoop =
         
         // 20 milliseconds/frame cap
         let elapsed = ticksToMilliseconds frameTimer.ElapsedTicks
-        if elapsed < 20. then Thread.Sleep (20. - elapsed |> floor |> int)
+        if elapsed < 22. then Thread.Sleep (22. - elapsed |> floor |> int)
         
         if titleUpdateTimer.ElapsedMilliseconds >= 1000L then
           SDL.SDL_SetWindowTitle (gameRenderer.WindowHandle, ("Super Hexagon (" + (1000. / ticksToMilliseconds frameTimer.ElapsedTicks |> int |> string) + " FPS)"))
           titleUpdateTimer.Reset ()
-        let timeFactor = (ticksToMilliseconds frameTimer.ElapsedTicks) / 18.  // The game runs at something in the neighborhood of 18 milliseconds/frame
+        let timeFactor = (ticksToMilliseconds frameTimer.ElapsedTicks) / 20.  // The game runs at something in the neighborhood of 20 milliseconds/frame
         frameTimer.Reset ()
         
         runGame game gameRenderer timeFactor
