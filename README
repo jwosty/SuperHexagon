@@ -1,0 +1,2 @@
+#Super Hexagon clone (TO BE RENAMED)
+This is my humble clone of Terry Cavanagh's amazing Super Hexagon game. It uses [SDL2-CS](https://github.com/flibitijibibo/SDL2-CS) for bindings to SDL2 and OpenGL, which it uses for rendering, so it shouldn't be too difficult to port to use the native windowing system and OpenGL.

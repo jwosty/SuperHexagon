@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "SuperHexagon", "SuperHexagon\SuperHexagon.fsproj", "{3AC64670-353D-42FE-AA97-CD81EAC83964}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "SuperHexagon", "SuperHexagon\SuperHexagon-MonoMac.fsproj", "{3AC64670-353D-42FE-AA97-CD81EAC83964}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDL2-CS", "SDL2-CS\SDL2-CS.csproj", "{85480198-8711-4355-830E-72FD794AD3F6}"
 EndProject
