@@ -16,6 +16,7 @@ type Game =
     SDL.SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS ||| SDL.SDL_WindowFlags.SDL_WINDOW_MOUSE_FOCUS
   
   static member CenterHexagonRadius = 0.1
+  static member PulseFactor = 0.01
   
   static member Init () =
     SDL.SDL_SetMainReady ()
@@ -91,43 +92,45 @@ type Game =
             (Seq.last unitHexagonVertices, 0)
           |> ignore)
   
-  member this.DrawBackgroundHexagon (r,g,b) =
+  member this.DrawBackgroundHexagon pulse (r,g,b) =
     // Draw a dark hexagon
+    let rad = Game.CenterHexagonRadius + (pulse * Game.PulseFactor)
     GL.Color3 (r*0.15,g*0.15,b*0.15)
     this.GLDo BeginMode.Triangles (fun () ->
       unitHexagonVertices
         |> Seq.fold (fun (lastX: float, lastY) (x, y) ->
             GL.Vertex2 (0, 0)
-            GL.Vertex2 (lastX * Game.CenterHexagonRadius, lastY * Game.CenterHexagonRadius)
-            GL.Vertex2 (x * Game.CenterHexagonRadius, y * Game.CenterHexagonRadius)
+            GL.Vertex2 (lastX * rad, lastY * rad)
+            GL.Vertex2 (x * rad, y * rad)
             x, y)
           (Seq.last unitHexagonVertices)
         |> ignore)
     // Outline that hexagon
     GL.Color3 (r,g,b)
     this.GLDo BeginMode.LineStrip (fun () ->
-      unitHexagonVertices |> Seq.iter (fun (x, y) -> GL.Vertex2 (x * Game.CenterHexagonRadius, y * Game.CenterHexagonRadius)))
+      unitHexagonVertices |> Seq.iter (fun (x, y) -> GL.Vertex2 (x * rad, y * rad)))
   
-  member this.DrawObstacle (r,g,b) playerSection obstacle =
+  member this.DrawObstacle (r,g,b) pulse playerSection obstacle =
+    let d = obstacle.distance + (pulse * Game.PulseFactor)
     let x, y = Seq.nth obstacle.section unitHexagonVertices
     let nextX, nextY = Seq.nth (obstacle.section + 1 |> wrap 6) unitHexagonVertices
     GL.Color3 (r*1.,g*1.,b*1.)
     this.GLDo BeginMode.Triangles (fun () ->
-      GL.Vertex2 (nextX * obstacle.distance, nextY * obstacle.distance)
-      GL.Vertex2 (x * obstacle.distance, y * obstacle.distance)
-      GL.Vertex2 (x * obstacle.distance * 1.3, y * obstacle.distance * 1.3)
+      GL.Vertex2 (nextX * d, nextY * d)
+      GL.Vertex2 (x * d, y * d)
+      GL.Vertex2 (x * d * 1.3, y * d * 1.3)
       
-      GL.Vertex2 (nextX * obstacle.distance, nextY * obstacle.distance)
-      GL.Vertex2 (x * obstacle.distance * 1.3, y * obstacle.distance * 1.3)
-      GL.Vertex2 (nextX * obstacle.distance * 1.3, nextY * obstacle.distance * 1.3))
+      GL.Vertex2 (nextX * d, nextY * d)
+      GL.Vertex2 (x * d * 1.3, y * d * 1.3)
+      GL.Vertex2 (nextX * d * 1.3, nextY * d * 1.3))
   
-  member this.DrawPlayer (r,g,b) angle =
+  member this.DrawPlayer pulse angle (r,g,b) =
     // Draw the player
     this.GLMatrixDo (fun () ->
       // Draw the player triangle pointing in the appropriate direction
       GL.Color3 (r*0.75,g*0.75,b*0.75)
       GL.Rotate (float angle, 0., 0., 1.)
-      GL.Translate (0., Game.CenterHexagonRadius * -1.1, 0.)
+      GL.Translate (0., -Game.CenterHexagonRadius - 0.011 - (pulse * Game.PulseFactor), 0.)
       this.GLDo BeginMode.Triangles (fun () ->
         GL.Vertex2 (-0.0125,  0.  )
         GL.Vertex2 ( 0.    , -0.02)
@@ -137,10 +140,11 @@ type Game =
     this.GLMatrixDo (fun () ->
       GL.Rotate (game.rotation.screenAngle, 0., 0., 1.) // Rotation!
       let rgb = hsv2rgb (game.hue,1.,1.)
+      let pulse = sin (game.gameTime / 16.)
       this.DrawBackground rgb
-      List.iter (this.DrawObstacle rgb <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.items
-      this.DrawBackgroundHexagon rgb
-      this.DrawPlayer rgb game.playerAngle)
+      List.iter (this.DrawObstacle rgb pulse <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.items
+      this.DrawBackgroundHexagon pulse rgb
+      this.DrawPlayer pulse game.playerAngle rgb)
   
   member this.DrawPostGame (game: PostGame) =
     this.GLMatrixDo (fun () ->
@@ -148,7 +152,7 @@ type Game =
       let rgb = hsv2rgb (game.hue,1.,1.)
       GL.Rotate (game.screenAngle, 0., 0., 1.)
       this.DrawBackground rgb
-      this.DrawBackgroundHexagon rgb)
+      this.DrawBackgroundHexagon 0. rgb)
   
   member this.DrawScreen (gameScreen: IGameScreen) =
     match gameScreen with
@@ -170,7 +174,7 @@ type Game =
         let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (game.hue, 1., 1.), hsv2rgb (postGame.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
-        this.DrawBackgroundHexagon rgb)
+        this.DrawBackgroundHexagon 0. rgb)
     | (:? PostGame as postGame), (:? SuperHexagon.Game as game) -> this.GLMatrixDo (fun () ->
         let p = float transition.gameTime / float transition.gameTimeDuration
         let scale = 5. - 4. * p
@@ -180,7 +184,7 @@ type Game =
         let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (postGame.hue, 1., 1.), hsv2rgb (game.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
-        this.DrawBackgroundHexagon rgb)
+        this.DrawBackgroundHexagon 0. rgb)
     | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   
   member this.DrawFrame ({ gameScreen = gameScreen }) =
