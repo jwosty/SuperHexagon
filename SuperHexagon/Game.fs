@@ -58,6 +58,12 @@ type Transition =
       then this.finish
       else upcast { this with gameTime = this.gameTime + timeFactor }
 
+type Difficulty =
+  Hexagon | Hexagoner | Hexagonest
+  
+  member this.hue =
+    match this with Hexagon -> 120. | Hexagoner -> 240. | Hexagonest -> 0.
+
 type GameRotation =
   { screenAngle: float; clockwise: bool; speed: float
     duration: float; gameTime: float }
@@ -101,9 +107,9 @@ type Game =
             hue = wrap 360. (this.hue + (0.25 * timeFactor)); obstacles = obstacles; rand = rand } :> _
 
 and MainMenu =
-  { screenAngle: float; hue: float }
+  { screenAngle: float; selectedDifficulty: Difficulty }
   
-  static member CreateDefault () = { screenAngle = 0.; hue = 120. }
+  static member CreateDefault () = { screenAngle = 0.; selectedDifficulty = Difficulty.Hexagon }
   
   interface IGameScreen with
     member this.Update keyboardState timeFactor =

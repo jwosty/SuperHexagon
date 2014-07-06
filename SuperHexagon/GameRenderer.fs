@@ -146,24 +146,24 @@ type Game =
       this.DrawBackgroundHexagon pulse rgb
       this.DrawPlayer pulse game.playerAngle rgb)
   
-  member this.DrawPostGame (game: MainMenu) =
+  member this.DrawMainMenu (mainMenu: MainMenu) =
     this.GLMatrixDo (fun () ->
       GL.Scale (5., 5., 1.)
-      let rgb = hsv2rgb (game.hue,1.,1.)
-      GL.Rotate (game.screenAngle, 0., 0., 1.)
+      let rgb = hsv2rgb (mainMenu.selectedDifficulty.hue,1.,1.)
+      GL.Rotate (mainMenu.screenAngle, 0., 0., 1.)
       this.DrawBackground rgb
       this.DrawBackgroundHexagon 0. rgb)
   
   member this.DrawScreen (gameScreen: IGameScreen) =
     match gameScreen with
     | :? SuperHexagon.Game as game -> this.DrawMidGame game
-    | :? MainMenu as game -> this.DrawPostGame game
+    | :? MainMenu as game -> this.DrawMainMenu game
     | :? Transition as transition -> this.DrawTransition transition
     | _ -> failwith <| sprintf "Unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
   
   member this.DrawTransition (transition: Transition) =
     match transition.start, transition.finish with
-    | (:? SuperHexagon.Game as game), (:? MainMenu as postGame) -> this.GLMatrixDo (fun () ->
+    | (:? SuperHexagon.Game as game), (:? MainMenu as mainMenu) -> this.GLMatrixDo (fun () ->
         // Interpolate to get a smooth transition between the wrapped ending orientation and 0
         let endgameRotation = game.rotation.screenAngle |> wrap (360. / 3.)
         let p = float transition.gameTime / float transition.gameTimeDuration
@@ -171,17 +171,17 @@ type Game =
         GL.Scale (scale, scale, 1.)
         GL.Rotate ((lerp (endgameRotation, 0.) p), 0., 0., 1.)
         
-        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (game.hue, 1., 1.), hsv2rgb (postGame.hue, 1., 1.)
+        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (game.hue, 1., 1.), hsv2rgb (mainMenu.selectedDifficulty.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)
-    | (:? MainMenu as postGame), (:? SuperHexagon.Game as game) -> this.GLMatrixDo (fun () ->
+    | (:? MainMenu as mainMenu), (:? SuperHexagon.Game as game) -> this.GLMatrixDo (fun () ->
         let p = float transition.gameTime / float transition.gameTimeDuration
         let scale = 5. - 4. * p
         GL.Scale (scale, scale, 1.)
         GL.Rotate (p * 360. * (2./3.), 0., 0., 1.)
         
-        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (postGame.hue, 1., 1.), hsv2rgb (game.hue, 1., 1.)
+        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (mainMenu.selectedDifficulty.hue, 1., 1.), hsv2rgb (game.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)
