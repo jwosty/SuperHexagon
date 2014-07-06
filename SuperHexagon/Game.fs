@@ -94,13 +94,13 @@ type Game =
       let obstacles, rand = this.obstacles.Update timeFactor this.rand
       let rotation = this.rotation.Update keyboard timeFactor
       if this.obstacles.CollidingWithPlayer (angleToHexagonFace (float playerAngle)) then
-        Transition.CreateDefault this (PostGame.CreateDefault ()) 25. :> _
+        Transition.CreateDefault this (MainMenu.CreateDefault ()) 25. :> _
       else
         { this with
             gameTime = this.gameTime + timeFactor; playerAngle = playerAngle; rotation = rotation
             hue = wrap 360. (this.hue + (0.25 * timeFactor)); obstacles = obstacles; rand = rand } :> _
 
-and PostGame =
+and MainMenu =
   { screenAngle: float; hue: float }
   
   static member CreateDefault () = { screenAngle = 0.; hue = 120. }

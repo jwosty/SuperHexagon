@@ -146,7 +146,7 @@ type Game =
       this.DrawBackgroundHexagon pulse rgb
       this.DrawPlayer pulse game.playerAngle rgb)
   
-  member this.DrawPostGame (game: PostGame) =
+  member this.DrawPostGame (game: MainMenu) =
     this.GLMatrixDo (fun () ->
       GL.Scale (5., 5., 1.)
       let rgb = hsv2rgb (game.hue,1.,1.)
@@ -157,13 +157,13 @@ type Game =
   member this.DrawScreen (gameScreen: IGameScreen) =
     match gameScreen with
     | :? SuperHexagon.Game as game -> this.DrawMidGame game
-    | :? PostGame as game -> this.DrawPostGame game
+    | :? MainMenu as game -> this.DrawPostGame game
     | :? Transition as transition -> this.DrawTransition transition
     | _ -> failwith <| sprintf "Unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
   
   member this.DrawTransition (transition: Transition) =
     match transition.start, transition.finish with
-    | (:? SuperHexagon.Game as game), (:? PostGame as postGame) -> this.GLMatrixDo (fun () ->
+    | (:? SuperHexagon.Game as game), (:? MainMenu as postGame) -> this.GLMatrixDo (fun () ->
         // Interpolate to get a smooth transition between the wrapped ending orientation and 0
         let endgameRotation = game.rotation.screenAngle |> wrap (360. / 3.)
         let p = float transition.gameTime / float transition.gameTimeDuration
@@ -175,7 +175,7 @@ type Game =
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)
-    | (:? PostGame as postGame), (:? SuperHexagon.Game as game) -> this.GLMatrixDo (fun () ->
+    | (:? MainMenu as postGame), (:? SuperHexagon.Game as game) -> this.GLMatrixDo (fun () ->
         let p = float transition.gameTime / float transition.gameTimeDuration
         let scale = 5. - 4. * p
         GL.Scale (scale, scale, 1.)

@@ -5,7 +5,7 @@ open SuperHexagon.HelperFunctions
 type SuperHexagon =
   { gameScreen: IGameScreen }
   
-  static member CreateDefault () = { gameScreen = PostGame.CreateDefault () :> IGameScreen }
+  static member CreateDefault () = { gameScreen = MainMenu.CreateDefault () :> IGameScreen }
   
   member this.Update events keyboardState timeFactor =
     if quitRequested events keyboardState
