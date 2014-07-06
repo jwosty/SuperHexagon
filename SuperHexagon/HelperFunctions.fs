@@ -18,6 +18,15 @@ let rec pollEvents () =
     !event :: pollEvents ()
   else []
 
+let getKeyboardState () =
+  let mutable length = 0
+  let keyboardPtr = SDL.SDL_GetKeyboardState (&length)
+  let keyboardState: byte[] = Array.zeroCreate length
+  Marshal.Copy (keyboardPtr, keyboardState, 0, length)
+  keyboardState
+
+let buttonJustPressed (lastKeyboardState: _[]) (keyboardState: _[]) (button: SDL.SDL_Scancode) = lastKeyboardState.[int button] = 0uy && keyboardState.[int button] = 1uy
+
 let eventExists eventType = List.exists (fun (event: SDL.SDL_Event) -> event.``type`` = eventType)
 let quitRequested events (keyboardState: byte[]) =
   eventExists SDL.SDL_EventType.SDL_QUIT events || keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE] = 1uy ||

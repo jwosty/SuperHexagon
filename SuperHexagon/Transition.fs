@@ -9,7 +9,7 @@ type Transition =
       gameTimeDuration = totalDuration; gameTime = 0. }
   
   interface IGameScreen with
-    member this.Update keyboard timeFactor =
+    member this.Update lastKeyboardState keyboardState timeFactor =
       if (this.gameTime + 1.) >= this.gameTimeDuration
       then this.finish
       else upcast { this with gameTime = this.gameTime + timeFactor }

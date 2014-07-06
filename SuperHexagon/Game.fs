@@ -34,9 +34,8 @@ type Game =
   member this.AddObstaclesIfNeeded obstacles = if this.gameTime % 50. = 0. then (0, 1.) :: obstacles else obstacles
   
   interface IGameScreen with
-    member this.Update keyboard timeFactor =
+    member this.Update lastKeyboardState keyboard timeFactor =
       let playerTurn =
-        // Keyboard repeat events are unreliable, so just use the current keyboard state
         match keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboard.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
         | 1uy, 0uy -> -7.5 * timeFactor
         | 0uy, 1uy -> 7.5 * timeFactor
@@ -57,12 +56,14 @@ and MainMenu =
   static member CreateDefault () = { screenAngle = 0.; selectedDifficulty = Difficulty.Hexagon }
   
   interface IGameScreen with
-    member this.Update keyboardState timeFactor =
+    member this.Update lastKeyboardState keyboardState timeFactor =
+      let inline buttonJustPressed button = buttonJustPressed lastKeyboardState keyboardState button
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
       then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 15.)
       else
         let this = { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
-        match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
-        | 1uy, 0uy -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagoner | Hexagoner -> Hexagonest | Hexagonest -> Hexagon }
-        | 0uy, 1uy -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagonest | Hexagoner -> Hexagon | Hexagonest -> Hexagoner }
+        let l,r = int SDL.SDL_Scancode.SDL_SCANCODE_LEFT, int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
+        match buttonJustPressed SDL.SDL_Scancode.SDL_SCANCODE_LEFT, buttonJustPressed SDL.SDL_Scancode.SDL_SCANCODE_RIGHT with
+        | true, false -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagoner | Hexagoner -> Hexagonest | Hexagonest -> Hexagon }
+        | false, true -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagonest | Hexagoner -> Hexagon | Hexagonest -> Hexagoner }
         | _ -> upcast this

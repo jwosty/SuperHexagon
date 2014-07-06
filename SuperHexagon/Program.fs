@@ -18,26 +18,21 @@ type AppDelegate() =
   override this.ApplicationShouldTerminateAfterLastWindowClosed(sender) =
     true
   
-  member this.RunGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastTimeFactor =
+  member this.RunGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastKeyboardState lastTimeFactor =
     let runGame = this.RunGame
 #else
 module GameLoop =
   let titleUpdateTimer = new Stopwatch()
   let frameTimer = new Stopwatch()
   
-  let rec runGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastTimeFactor =
+  let rec runGame (game: SuperHexagon) (gameRenderer: Renderers.Game) lastKeyboardState lastTimeFactor =
 #endif
     frameTimer.Start()
     if not titleUpdateTimer.IsRunning then titleUpdateTimer.Start ()
     let events = pollEvents ()
+    let keyboardState = getKeyboardState ()
     
-    // Get keyboard events
-    let mutable length = 0
-    let keyboardPtr = SDL.SDL_GetKeyboardState (&length)
-    let keyboardState: byte[] = Array.zeroCreate length
-    Marshal.Copy (keyboardPtr, keyboardState, 0, length)
-    
-    match game.Update events keyboardState lastTimeFactor with
+    match game.Update events lastKeyboardState keyboardState lastTimeFactor with
     | Some(game) ->
         gameRenderer.DrawFrame game
         
@@ -48,10 +43,11 @@ module GameLoop =
         if titleUpdateTimer.ElapsedMilliseconds >= 1000L then
           SDL.SDL_SetWindowTitle (gameRenderer.WindowHandle, ("Super Hexagon (" + (1000. / ticksToMilliseconds frameTimer.ElapsedTicks |> int |> string) + " FPS)"))
           titleUpdateTimer.Reset ()
-        let timeFactor = (ticksToMilliseconds frameTimer.ElapsedTicks) / 20.  // The game runs at something in the neighborhood of 20 milliseconds/frame
+        // Use 20 milliseconds/frame as the reference point. It doesn't really matter what this number is as long as it doesn't change and everything is calibrated to it.
+        let timeFactor = (ticksToMilliseconds frameTimer.ElapsedTicks) / 20.
         frameTimer.Reset ()
         
-        runGame game gameRenderer timeFactor
+        runGame game gameRenderer keyboardState timeFactor
     | None -> ()
   
 #if MONOMAC
@@ -62,7 +58,7 @@ module GameLoop =
 #endif
     Renderers.Game.Init ()
     use gameRenderer = new Renderers.Game()
-    runGame (SuperHexagon.SuperHexagon.CreateDefault ()) gameRenderer 1.
+    runGame (SuperHexagon.SuperHexagon.CreateDefault ()) gameRenderer (getKeyboardState ()) 1.
 
 module main =
   [<EntryPoint>]
