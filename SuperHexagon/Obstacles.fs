@@ -25,7 +25,7 @@ type Obstacles =
       [0;1;3;4];     [1;2;4;5];     [2;3;5;0] ]
       |> List.map (List.map (fun s -> { section = s; distance = 2.}))
   
-  static member SpawnGroup rand = Obstacles.EasyGroups.[Seq.head rand |> int |> wrap Obstacles.EasyGroups.Length]
+  static member SpawnGroup (rand: uint64 seq) = Obstacles.EasyGroups.[Seq.head rand |> int |> wrap Obstacles.EasyGroups.Length]
   
   member this.Update timeFactor rand =
     let items, rand =
