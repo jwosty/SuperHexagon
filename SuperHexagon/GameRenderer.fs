@@ -185,6 +185,15 @@ type Game =
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)
+    | (:? MainMenu as startMainMenu), (:? MainMenu as finishMainMenu) -> this.GLMatrixDo (fun () ->
+        let p = float transition.gameTime / float transition.gameTimeDuration
+        let scale = (cos (p*Math.PI) * 0.75) + 6.
+        GL.Scale (scale, scale, 1.)
+        GL.Rotate (startMainMenu.screenAngle, 0., 0., 1.)   // We could lerp the angles, but I don't feel like figuring out the end angle in the code that creates this transition
+        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (startMainMenu.selectedDifficulty.hue, 1., 1.), hsv2rgb (finishMainMenu.selectedDifficulty.hue, 1., 1.)
+        let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
+        this.DrawBackground rgb
+        this.DrawBackgroundHexagon 0. rgb)
     | _ -> this.DrawScreen transition.finish  // If we don't know how to draw this particular transition, just draw the last screen instead of crashing
   
   member this.DrawFrame ({ gameScreen = gameScreen }) =

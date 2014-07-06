@@ -64,6 +64,10 @@ and MainMenu =
         let this = { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
         let l,r = int SDL.SDL_Scancode.SDL_SCANCODE_LEFT, int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
         match buttonJustPressed SDL.SDL_Scancode.SDL_SCANCODE_LEFT, buttonJustPressed SDL.SDL_Scancode.SDL_SCANCODE_RIGHT with
-        | true, false -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagoner | Hexagoner -> Hexagonest | Hexagonest -> Hexagon }
-        | false, true -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagonest | Hexagoner -> Hexagon | Hexagonest -> Hexagoner }
+        | false, true ->
+            let next = { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagoner | Hexagoner -> Hexagonest | Hexagonest -> Hexagon }
+            Transition.CreateDefault this next 25. :> _
+        | true, false ->
+            let next = { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagonest | Hexagoner -> Hexagon | Hexagonest -> Hexagoner }
+            Transition.CreateDefault this next 25. :> _
         | _ -> upcast this
