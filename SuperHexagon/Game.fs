@@ -60,4 +60,9 @@ and MainMenu =
     member this.Update keyboardState timeFactor =
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
       then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 15.)
-      else upcast { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
+      else
+        let this = { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
+        match keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_LEFT], keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT] with
+        | 1uy, 0uy -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagoner | Hexagoner -> Hexagonest | Hexagonest -> Hexagon }
+        | 0uy, 1uy -> upcast { this with selectedDifficulty = match this.selectedDifficulty with Hexagon -> Hexagonest | Hexagoner -> Hexagon | Hexagonest -> Hexagoner }
+        | _ -> upcast this
