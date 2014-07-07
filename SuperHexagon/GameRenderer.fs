@@ -167,6 +167,21 @@ type Game =
     | :? Transition as transition -> this.DrawTransition transition
     | _ -> failwith <| sprintf "Unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
     *)
+    GL.BindBuffer (BufferTarget.ArrayBuffer, this.GLBuffers.vertexBufferID)
+    GL.EnableClientState ArrayCap.VertexArray
+    GL.VertexPointer (2, VertexPointerType.Float, 0, IntPtr.Zero)
+    
+    GL.BindBuffer (BufferTarget.ArrayBuffer, this.GLBuffers.colorBufferID)
+    GL.EnableClientState ArrayCap.ColorArray
+    GL.ColorPointer (4, ColorPointerType.Float, 0, IntPtr.Zero)
+    
+    GL.BindBuffer (BufferTarget.ElementArrayBuffer, this.GLBuffers.indexBufferID)
+    
+    GL.DrawElements (BeginMode.Quads, 4, DrawElementsType.UnsignedShort, IntPtr.Zero)
+    
+    GL.DisableClientState ArrayCap.VertexArray
+    GL.DisableClientState ArrayCap.ColorArray
+    
     ()
   
   member this.DrawTransition (transition: Transition) =

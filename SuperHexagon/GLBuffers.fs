@@ -18,5 +18,5 @@ type GLBuffers =
   
   new() =
     { indexBufferID = GLBuffers.CreateBuffer BufferTarget.ElementArrayBuffer [|0us..3us|]
-      vertexBufferID = GLBuffers.CreateBuffer BufferTarget.ArrayBuffer [|50.f;50.f; 100.f;50.f; 100.f;100.f; 50.f;100.f|]
+      vertexBufferID = GLBuffers.CreateBuffer BufferTarget.ArrayBuffer [|-1.f;-1.f; 1.f;-1.f; 1.f;1.f; -1.f;1.f|]
       colorBufferID = GLBuffers.CreateBuffer BufferTarget.ArrayBuffer <| Array.create 16 1.f }
