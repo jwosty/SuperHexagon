@@ -54,15 +54,12 @@
     <ErrorReport>prompt</ErrorReport>
     <PlatformTarget>
     </PlatformTarget>
-    <LinkMode>Full</LinkMode>
     <UseSGen>false</UseSGen>
-    <IncludeMonoRuntime>true</IncludeMonoRuntime>
+    <IncludeMonoRuntime>false</IncludeMonoRuntime>
     <ConsolePause>false</ConsolePause>
-    <EnableCodeSigning>true</EnableCodeSigning>
-    <CodeSigningKey>3rd Party Mac Developer Application</CodeSigningKey>
-    <CreatePackage>true</CreatePackage>
-    <EnablePackageSigning>true</EnablePackageSigning>
-    <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <CreatePackage>false</CreatePackage>
+    <EnablePackageSigning>false</EnablePackageSigning>
     <Tailcalls>true</Tailcalls>
     <DefineConstants>MONOMAC</DefineConstants>
   </PropertyGroup>
@@ -80,6 +77,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
     <Compile Include="HelperFunctions.fs" />
+    <Compile Include="GLBuffers.fs" />
     <Compile Include="IGameScreen.fs" />
     <Compile Include="Transition.fs" />
     <Compile Include="Difficulty.fs" />

@@ -8,8 +8,11 @@ open System
 open System.Runtime.InteropServices
 
 type Game =
+  /// Pointer to the SDL window that the game is rendering in
   val WindowHandle: nativeint
+  // Pointer to the OpenGL context that the game is rendering with
   val GLContext: nativeint
+  val GLBuffers: GLBuffers
   
   static member DefaultWindowFlags =
     SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL ||| SDL.SDL_WindowFlags.SDL_WINDOW_HIDDEN |||
@@ -23,10 +26,9 @@ type Game =
     SDL.SDL_Init SDL.SDL_INIT_VIDEO |> ignore
     SDL_ttf.TTF_Init () |> ignore
   
-  new(windowHandle, glContext) = { WindowHandle = windowHandle; GLContext = glContext }
+  new(windowHandle, glContext, glBuffers) = { WindowHandle = windowHandle; GLContext = glContext; GLBuffers = glBuffers }
   
   new() =
-    
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_RED_SIZE, 8) |> ignore
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_GREEN_SIZE, 8) |> ignore
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_BLUE_SIZE, 8) |> ignore
@@ -37,11 +39,9 @@ type Game =
     // Create a multisampling antialiasing buffer and use 4 samples per pixel
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_MULTISAMPLEBUFFERS, 1) |> ignore
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_MULTISAMPLESAMPLES, 4) |> ignore
-    
 #if DEBUG
     SDL.SDL_GL_SetAttribute (SDL.SDL_GLattr.SDL_GL_CONTEXT_FLAGS, SDL.SDL_GLcontext.SDL_GL_CONTEXT_DEBUG_FLAG |> int) |> ignore
 #endif
-    
     
     let windowHandle = SDL.SDL_CreateWindow ("SuperHexagon", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1024, 768, Game.DefaultWindowFlags)
     SDL.SDL_DisableScreenSaver ()
@@ -63,10 +63,12 @@ type Game =
     GL.Enable EnableCap.Multisample
     GL.Enable EnableCap.Texture2D
     
+    let glBuffers = new GLBuffers()
+    
     // Show the window
     SDL.SDL_ShowWindow windowHandle
     
-    new Game(windowHandle, glContext)
+    new Game(windowHandle, glContext, glBuffers)
   
   member this.GLMatrixDo render =
     GL.PushMatrix ()
@@ -158,11 +160,14 @@ type Game =
       this.DrawBackgroundHexagon 0. rgb)
   
   member this.DrawScreen (gameScreen: IGameScreen) =
+    (*
     match gameScreen with
     | :? SuperHexagon.Game as game -> this.DrawMidGame game
     | :? MainMenu as game -> this.DrawMainMenu game
     | :? Transition as transition -> this.DrawTransition transition
     | _ -> failwith <| sprintf "Unimplemented \"%s\" screen" (gameScreen.GetType ()).Name
+    *)
+    ()
   
   member this.DrawTransition (transition: Transition) =
     match transition.start, transition.finish with
@@ -204,9 +209,9 @@ type Game =
     GL.Clear ClearBufferMask.ColorBufferBit   // ^^
     this.DrawScreen gameScreen                // Draw
     SDL.SDL_GL_SwapWindow this.WindowHandle   // Make the result visible
-
+  
   member this.Window = SDL.SDL_GetWindowSurface this.WindowHandle |> ptrToStructure<SDL.SDL_Surface>
-
+  
   interface IDisposable with
     override this.Dispose () =
       SDL.SDL_GL_DeleteContext this.GLContext

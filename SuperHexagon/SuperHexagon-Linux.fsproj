@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HelperFunctions.fs" />
+    <Compile Include="GLBuffer.fs" />
     <Compile Include="IGameScreen.fs" />
     <Compile Include="Transition.fs" />
     <Compile Include="Difficulty.fs" />
