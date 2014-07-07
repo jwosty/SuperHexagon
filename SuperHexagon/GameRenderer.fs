@@ -149,7 +149,7 @@ type Game =
   member this.DrawMainMenu (mainMenu: MainMenu) =
     this.GLMatrixDo (fun () ->
       GL.Scale (5., 5., 1.)
-      let rgb = hsv2rgb (mainMenu.selectedDifficulty.hue,1.,1.)
+      let rgb = hsv2rgb (mainMenu.hue,1.,1.)
       GL.Rotate (mainMenu.screenAngle, 0., 0., 1.)
       this.DrawBackground rgb
       this.DrawBackgroundHexagon 0. rgb)
@@ -171,7 +171,7 @@ type Game =
         GL.Scale (scale, scale, 1.)
         GL.Rotate ((lerp (endgameRotation, 0.) p), 0., 0., 1.)
         
-        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (game.hue, 1., 1.), hsv2rgb (mainMenu.selectedDifficulty.hue, 1., 1.)
+        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (game.hue, 1., 1.), hsv2rgb (mainMenu.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)
@@ -181,7 +181,7 @@ type Game =
         GL.Scale (scale, scale, 1.)
         GL.Rotate (p * 360. * (2./3.), 0., 0., 1.)
         
-        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (mainMenu.selectedDifficulty.hue, 1., 1.), hsv2rgb (game.hue, 1., 1.)
+        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (mainMenu.hue, 1., 1.), hsv2rgb (game.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)
@@ -190,7 +190,7 @@ type Game =
         let scale = (cos (p*Math.PI) * 0.75) + 6.
         GL.Scale (scale, scale, 1.)
         GL.Rotate (startMainMenu.screenAngle, 0., 0., 1.)   // We could lerp the angles, but I don't feel like figuring out the end angle in the code that creates this transition
-        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (startMainMenu.selectedDifficulty.hue, 1., 1.), hsv2rgb (finishMainMenu.selectedDifficulty.hue, 1., 1.)
+        let (gr, gg, gb), (pr, pg, pb) = hsv2rgb (startMainMenu.hue, 1., 1.), hsv2rgb (finishMainMenu.hue, 1., 1.)
         let rgb = lerp (gr,pr) p, lerp (gg,pg) p, lerp (gb, pb) p
         this.DrawBackground rgb
         this.DrawBackgroundHexagon 0. rgb)

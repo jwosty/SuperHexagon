@@ -45,16 +45,18 @@ type Game =
       let obstacles, rand = this.obstacles.Update timeFactor this.rand
       let rotation = this.rotation.Update keyboard timeFactor
       if this.obstacles.CollidingWithPlayer (angleToHexagonFace (float playerAngle)) then
-        Transition.CreateDefault this (MainMenu.CreateDefault ()) 25. :> _
+        Transition.CreateDefault this ({ MainMenu.CreateDefault () with selectedDifficulty = this.difficulty }) 25. :> _
       else
         { this with
             gameTime = this.gameTime + timeFactor; playerAngle = playerAngle; rotation = rotation
             obstacles = obstacles; rand = rand } :> _
 
 and MainMenu =
-  { screenAngle: float; selectedDifficulty: Difficulty }
+  { gameTime: float; screenAngle: float; selectedDifficulty: Difficulty }
   
-  static member CreateDefault () = { screenAngle = 0.; selectedDifficulty = Difficulty.Hexagon }
+  static member CreateDefault () = { gameTime = 0.; screenAngle = 0.; selectedDifficulty = Difficulty.Hexagon }
+  
+  member this.hue = this.selectedDifficulty.hue + (45.*(abs(((this.gameTime/512.+1.)%4.)-2.)-1.))
   
   interface IGameScreen with
     member this.Update lastKeyboardState keyboardState timeFactor =
@@ -62,7 +64,7 @@ and MainMenu =
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
       then upcast (Transition.CreateDefault this (Game.CreateDefault this.selectedDifficulty) 15.)
       else
-        let this = { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
+        let this = { this with gameTime = this.gameTime + timeFactor; screenAngle = this.screenAngle - (0.25 * timeFactor) }
         let l,r = int SDL.SDL_Scancode.SDL_SCANCODE_LEFT, int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
         match buttonJustPressed SDL.SDL_Scancode.SDL_SCANCODE_LEFT, buttonJustPressed SDL.SDL_Scancode.SDL_SCANCODE_RIGHT with
         | false, true ->
