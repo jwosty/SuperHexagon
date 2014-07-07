@@ -141,7 +141,10 @@ type Game =
       GL.Rotate (game.rotation.screenAngle, 0., 0., 1.) // Rotation!
       let rgb = hsv2rgb (game.hue,1.,1.)
       let pulse = sin (game.gameTime / 16.) * 2.
-      this.DrawBackground rgb
+      this.GLMatrixDo (fun () ->
+        if game.difficulty = Hexagoner &&  game.gameTime%64.-32.>0. then GL.Rotate (60., 0., 0., 1.)
+        if game.difficulty = Hexagonest && game.gameTime%32.-16.>0. then GL.Rotate (60., 0., 0., 1.)
+        this.DrawBackground rgb)
       List.iter (this.DrawObstacle rgb pulse <| int (angleToHexagonFace <| float game.playerAngle)) game.obstacles.items
       this.DrawBackgroundHexagon pulse rgb
       this.DrawPlayer pulse game.playerAngle rgb)
