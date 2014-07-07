@@ -17,10 +17,12 @@ type GameRotation =
     { screenAngle = 0.; clockwise = true; speed = 1.
       duration = 500.; gameTime = 0. }
   
-  member this.Update keyboard timeFactor =
-    if this.gameTime >= this.duration
-    then { this with clockwise = not this.clockwise; gameTime = 0. }
-    else { this with gameTime = this.gameTime + timeFactor; screenAngle = this.screenAngle + ((if this.clockwise then timeFactor else -timeFactor) * this.speed) }
+  member this.Update keyboard rand timeFactor =
+    if this.gameTime >= this.duration then
+      if Seq.head rand % 4UL = 0UL
+      then { this with gameTime = 0.; clockwise = not this.clockwise; speed = 4.; duration = 50. }, Seq.skip 1 rand
+      else { this with gameTime = 0.; clockwise = not this.clockwise; speed = 1.; duration = 500. }, Seq.skip 1 rand
+    else { this with gameTime = this.gameTime + timeFactor; screenAngle = this.screenAngle + ((if this.clockwise then timeFactor else -timeFactor) * this.speed) }, rand
 
 type Game =
   { gameTime: float; rand: uint64 seq; difficulty: Difficulty
@@ -43,7 +45,7 @@ type Game =
         | _ -> 0.
       let playerAngle = this.playerAngle + playerTurn
       let obstacles, rand = this.obstacles.Update timeFactor this.rand
-      let rotation = this.rotation.Update keyboard timeFactor
+      let rotation, rand = this.rotation.Update keyboard rand timeFactor
       if this.obstacles.CollidingWithPlayer (angleToHexagonFace (float playerAngle)) then
         Transition.CreateDefault this ({ MainMenu.CreateDefault () with selectedDifficulty = this.difficulty }) 25. :> _
       else
