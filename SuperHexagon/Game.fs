@@ -3,12 +3,6 @@ open SDL2
 open SuperHexagon.HelperFunctions
 open System
 
-type Difficulty =
-  Hexagon | Hexagoner | Hexagonest
-  
-  member this.hue =
-    match this with Hexagon -> 120. | Hexagoner -> 240. | Hexagonest -> 0.
-
 type GameRotation =
   { screenAngle: float; clockwise: bool; speed: float
     duration: float; gameTime: float }

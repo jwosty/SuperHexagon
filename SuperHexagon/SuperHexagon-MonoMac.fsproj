@@ -82,6 +82,7 @@
     <Compile Include="HelperFunctions.fs" />
     <Compile Include="IGameScreen.fs" />
     <Compile Include="Transition.fs" />
+    <Compile Include="Difficulty.fs" />
     <Compile Include="Obstacles.fs" />
     <Compile Include="Game.fs" />
     <Compile Include="SuperHexagon.fs" />
