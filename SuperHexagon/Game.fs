@@ -23,15 +23,16 @@ type GameRotation =
     else { this with gameTime = this.gameTime + timeFactor; screenAngle = this.screenAngle + ((if this.clockwise then timeFactor else -timeFactor) * this.speed) }
 
 type Game =
-  { gameTime: float; rand: uint64 seq; playerAngle: float
-    rotation: GameRotation; hue: float; obstacles: Obstacles }
+  { gameTime: float; rand: uint64 seq; difficulty: Difficulty
+    playerAngle: float; rotation: GameRotation; obstacles: Obstacles }
   
-  static member CreateDefault () =
+  static member CreateDefault difficulty =
     let rand = Seq.unfold (fun x -> Some(x, xorshift x)) <| uint64 DateTime.Now.Ticks
-    { gameTime = 0.; rand = Seq.skip 1 rand; playerAngle = float (Seq.head rand) % 360.;
-      rotation = GameRotation.CreateDefault (); hue = 240.; obstacles = Obstacles.CreateDefault () }
+    { gameTime = 0.; rand = Seq.skip 1 rand; difficulty = difficulty
+      playerAngle = float (Seq.head rand) % 360.; rotation = GameRotation.CreateDefault ()
+      obstacles = Obstacles.CreateDefault () }
   
-  member this.AddObstaclesIfNeeded obstacles = if this.gameTime % 50. = 0. then (0, 1.) :: obstacles else obstacles
+  member this.hue = this.difficulty.hue + (60.*(abs(((this.gameTime/256.+1.)%4.)-2.)-1.))
   
   interface IGameScreen with
     member this.Update lastKeyboardState keyboard timeFactor =
@@ -48,7 +49,7 @@ type Game =
       else
         { this with
             gameTime = this.gameTime + timeFactor; playerAngle = playerAngle; rotation = rotation
-            hue = wrap 360. (this.hue + (0.25 * timeFactor)); obstacles = obstacles; rand = rand } :> _
+            obstacles = obstacles; rand = rand } :> _
 
 and MainMenu =
   { screenAngle: float; selectedDifficulty: Difficulty }
@@ -59,7 +60,7 @@ and MainMenu =
     member this.Update lastKeyboardState keyboardState timeFactor =
       let inline buttonJustPressed button = buttonJustPressed lastKeyboardState keyboardState button
       if keyboardState.[int SDL.SDL_Scancode.SDL_SCANCODE_SPACE] = 1uy
-      then upcast (Transition.CreateDefault this (Game.CreateDefault ()) 15.)
+      then upcast (Transition.CreateDefault this (Game.CreateDefault this.selectedDifficulty) 15.)
       else
         let this = { this with screenAngle = this.screenAngle - (0.25 * timeFactor) }
         let l,r = int SDL.SDL_Scancode.SDL_SCANCODE_LEFT, int SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
